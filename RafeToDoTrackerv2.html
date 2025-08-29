@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Evening XP Tracker — Rafe</title>
+<style>
+  :root{
+    --bg:#0f172a;--card:#111827;--muted:#334155;--text:#e5e7eb;
+    --accent:#22c55e;--accent2:#3b82f6;--shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  html,body{margin:0;padding:0;background:linear-gradient(160deg,#0b1222,#0f172a 40%,#0b1222);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  .wrap{max-width:960px;margin:0 auto;padding:16px}
+  h1,h2,h3{margin:8px 0}
+  .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
+  @media(min-width:700px){ .grid{grid-template-columns:1fr 1fr} }
+  .card{background:linear-gradient(180deg,#111827,#0b1020);border:1px solid #1f2937;border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+  .row.done{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.35)}
+  .left{display:flex;align-items:center;gap:10px}
+  .icon{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:#0b1222;border:1px solid #243042}
+  .label{font-weight:600}
+  .sub{font-size:12px;color:#cbd5e1}
+  .xp{font-variant-numeric:tabular-nums;color:#bbf7d0}
+  .chip,button{
+    background:var(--card);color:var(--text);border:1px solid #1f2937;border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:var(--shadow);
+    transition:transform .05s ease, background .2s ease, border-color .2s ease
+  }
+  button:active{transform:scale(.98)}
+  .chip{font-size:14px}
+  .active{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(59,130,246,.35), var(--shadow)}
+  .section-title{font-size:14px;color:#a5b4fc;margin:6px 0 2px 2px;letter-spacing:.4px}
+  .footer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:10px}
+  .progress{height:10px;background:#0b1222;border:1px solid #243042;border-radius:999px;overflow:hidden;min-width:120px}
+  .progress>div{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0%}
+  .pill{padding:4px 8px;border-radius:999px;background:#0b1222;border:1px solid #243042}
+  .rewards{display:flex;flex-wrap:wrap;gap:8px}
+  .reward{display:inline-flex;gap:8px;align-items:center;margin:4px 0;padding:6px 10px;border-radius:999px;border:1px solid #243042;background:#0b1222}
+  .topbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .title{font-size:18px;font-weight:700}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  @media print{
+    body{background:#fff;color:#000}
+    .wrap{max-width:100%;padding:0}
+    .card, .row, button, .chip{box-shadow:none}
+    header, .nav{display:none !important}
+  }
+  /* Settings dialog */
+  dialog{border:none;border-radius:12px;padding:0;background:#0b1020;color:var(--text);box-shadow:var(--shadow);width:min(920px,96vw)}
+  dialog::backdrop{background:rgba(0,0,0,.5)}
+  .dlg-head{padding:12px 14px;border-bottom:1px solid #1f2937;display:flex;justify-content:space-between;align-items:center}
+  .dlg-title{font-weight:700}
+  .dlg-body{padding:12px 14px;max-height:72vh;overflow:auto}
+  .form-grid{display:grid;grid-template-columns:1fr;gap:10px}
+  @media(min-width:920px){ .form-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start; } }
+  label{display:block;font-size:12px;color:#cbd5e1;margin-bottom:4px}
+  input[type="text"],input[type="number"],textarea,select{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #243042;background:#0b1222;color:var(--text);min-width:0}
+  fieldset{border:1px solid #243042;border-radius:10px;padding:10px}
+  legend{padding:0 6px;color:#a5b4fc}
+  .dlg-actions{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px;border-top:1px solid #1f2937}
+  .note{font-size:12px;color:#94a3b8}
+  /* Task manager helpers */
+  .task-card{border:1px solid #243042;border-radius:10px;padding:10px;background:#0b1222}
+  .task-row{display:grid;grid-template-columns:minmax(0,120px) minmax(200px,1fr) minmax(0,100px) minmax(0,160px);gap:8px}
+  @media(max-width:920px){ .task-row{grid-template-columns:1fr 1fr} }
+  .task-row label{margin-bottom:2px}
+  .task-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
+  .small-note{font-size:11px;color:#94a3b8}
+  /* Rewards manager */
+  .reward-row{display:grid;grid-template-columns:minmax(0,1fr) 120px minmax(220px,1fr);gap:8px;align-items:end}
+  @media(max-width:920px){ .reward-row{grid-template-columns:1fr 1fr} }
+  .reward-row > div:last-child{display:flex;gap:6px;flex-wrap:wrap}
+
+  /* Make heavy editors span both columns */
+  fieldset[data-span="full"]{grid-column:1 / -1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="app">
+    <div class="topbar nav">
+      <div class="title" id="child-title">Rafe</div>
+      <div class="actions">
+        <button id="reset-week" class="chip" title="Resets weekly counters">New Week</button>
+        <button id="print-checklist" class="chip">Print Checklist (A4)</button>
+        <button id="print-ledger" class="chip">Print Ledger (A4)</button>
+        <button id="parent-mode" class="chip" title="Edit settings (PIN)">Parent Mode</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="section-title">Today’s Tasks <span id="date-span" class="sub"></span></div>
+        <div id="task-list" aria-live="polite"></div>
+
+        <div class="footer">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="sub">On-Time Bonus (ready by 8:30):</div>
+            <button id="toggle-ontime" class="chip">+10 XP</button>
+            <button id="reset-today" class="chip" title="Clear today’s checkmarks">Reset Today</button>
+          </div>
+          <div class="progress" title="Level progress">
+            <div id="level-progress"></div>
+          </div>
+          <div class="sub">Level <span id="level">1</span> · <span id="xp">0</span> XP · Week <span id="week-xp">0</span> XP</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Weekly Goals</div>
+        <div id="weekly-goals"></div>
+
+        <div class="section-title">Level-Up Rewards</div>
+        <div class="rewards" id="rewards"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings dialog -->
+<dialog id="settingsDlg">
+  <div class="dlg-head">
+    <div class="dlg-title">Parent Settings</div>
+    <div>
+      <button class="chip" id="cfg-export">Export</button>
+      <button class="chip" id="cfg-import">Import</button>
+      <button class="chip" id="cfg-reset">Reset</button>
+      <button class="chip" id="cfg-close">Close</button>
+    </div>
+  </div>
+  <div class="dlg-body">
+    <div class="form-grid">
+      <div>
+        <fieldset>
+          <legend>XP & Level</legend>
+          <label>Level step (XP per level)
+            <input id="cfg-levelStep" type="number" min="1" step="1">
+          </label>
+          <label>On-time bonus XP
+            <input id="cfg-onTimeXp" type="number" min="0" step="1">
+          </label>
+          <p class="note">Changing level step doesn’t change stored XP; it only changes how quickly levels rise.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Schedule</legend>
+          <label>School nights (1=Mon … 7=Sun)
+            <input id="cfg-schoolNights" type="text" placeholder="e.g., 1,2,3,4,5">
+          </label>
+          <label>Pack nights (for swim bag) (1=Mon … 7=Sun)
+            <input id="cfg-packNights" type="text" placeholder="e.g., 1,4,5">
+          </label>
+        </fieldset>
+
+        <fieldset id="rewards-fieldset" data-span="full">
+          <legend>Rewards</legend>
+          <div id="rewards-manager" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <button class="chip" type="button" id="reward-add">Add Reward</button>
+          </div>
+          <p class="note">Each reward can optionally require a minimum level.</p>
+        </fieldset>
+      </div>
+
+      <div>
+        <fieldset>
+          <legend>Weekly goals & bonuses</legend>
+          <label>Music: goal
+            <input id="cfg-music-goal" type="number" min="0" step="1">
+          </label>
+          <label>Music: bonus at
+            <input id="cfg-music-bonusAt" type="number" min="0" step="1">
+          </label>
+          <label>Music: bonus XP
+            <input id="cfg-music-bonusXp" type="number" min="0" step="1">
+          </label>
+          <hr style="border-color:#1f2937">
+          <label>Spanish: goal
+            <input id="cfg-spanish-goal" type="number" min="0" step="1">
+          </label>
+          <label>Spanish: bonus at
+            <input id="cfg-spanish-bonusAt" type="number" min="0" step="1">
+          </label>
+          <label>Spanish: bonus XP
+            <input id="cfg-spanish-bonusXp" type="number" min="0" step="1">
+          </label>
+          <hr style="border-color:#1f2937">
+          <label>Workout: goal
+            <input id="cfg-workout-goal" type="number" min="0" step="1">
+          </label>
+          <label>Workout: bonus at
+            <input id="cfg-workout-bonusAt" type="number" min="0" step="1">
+          </label>
+          <label>Workout: bonus XP
+            <input id="cfg-workout-bonusXp" type="number" min="0" step="1">
+          </label>
+        </fieldset>
+
+        <fieldset id="tasks-fieldset" data-span="full">
+          <legend>Tasks</legend>
+          <div class="note" style="margin-bottom:8px">
+            Add, remove, or reorder tasks. “On-time bonus” is special and cannot be removed or have its ID changed.
+          </div>
+          <div id="tasks-manager" style="display:flex;flex-direction:column;gap:10px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <button class="chip" type="button" id="task-add">Add Task</button>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+  </div>
+  <div class="dlg-actions">
+    <button class="chip" id="cfg-save">Save</button>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  // ----- Per-child identity -----
+  const CHILD_ID = "rafe";
+
+  // ----- PIN -----
+  const DEFAULT_PIN = "7497";
+
+  // ----- Default config derived from your original file -----
+  const DEFAULTS = {
+    LEVEL_STEP: 120,
+    SCHOOL_NIGHTS: [1,2,3,4,5],
+    PACK_NIGHTS: [1,4,5],
+    onTimeXp: 10,
+    tasks: [
+      { id:"workout", icon:"🏊‍♂️", label:"Swimmer Workout", xp:10,
+        weekly:{ key:"workout", goal:3, bonusAt:4, bonusXp:10 } },
+      { id:"homework1", icon:"✏️", label:"Homework Block 1 (25 min)", xp:8 },
+      { id:"homework2", icon:"⏱️", label:"Homework Block 2 (optional)", xp:4 },
+      { id:"music", icon:"🎵", label:"Music practice (15 min)", xp:8,
+        weekly:{ key:"music", goal:4, bonusAt:5, bonusXp:10 } },
+      { id:"spanish", icon:"💬", label:"Spanish — complete a lesson", xp:10,
+        weekly:{ key:"spanish", goal:3, bonusAt:4, bonusXp:10 } },
+      { id:"lunch", icon:"🥪", label:"Pack lunch + water", xp:8,
+        showIf: ctx => ctx.SCHOOL_NIGHTS.includes(ctx.dow),
+        weekly:{ key:"lunch", goal:5 } },
+      { id:"backpack", icon:"🎒", label:"Backpack reset", xp:4 },
+      { id:"swim", icon:"🏊", label:"Pack swim bag", xp:8,
+        showIf: ctx => ctx.PACK_NIGHTS.includes(ctx.dow),
+        weekly:{ key:"swim", goalFrom:"swimRequired" } },
+      { id:"dishes", icon:"🍽️", label:"Wash and put away dishes", xp:10 },
+      { id:"hygiene", icon:"🛁", label:"Shower + teeth", xp:4 },
+      { id:"clothes", icon:"👕", label:"Clothes out for tomorrow", xp:4 },
+      { id:"ontime", icon:"⭐", label:"On-time bonus", xp:10, special:"ontime" }
+    ],
+    rewards: [
+      { label:"🎬 Movie night", minLevel:1 },
+      { label:"🍕 Pizza night", minLevel:1 },
+      { label:"🎲 Board game with Dad", minLevel:1 },
+      { label:"📱 30 min screen time", minLevel:1 },
+      { label:"💵 $50 toward savings (Level 3+)", minLevel:3 }
+    ],
+    parentPin: DEFAULT_PIN
+  };
+
+  // ----- Utilities -----
+  const isoDow = d => { let n = d.getDay(); return n===0?7:n; }; // 1..7
+  const pad = n => String(n).padStart(2,'0');
+  const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const now = () => new Date();
+  const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
+
+  // ----- Config storage (per child) -----
+  const CFG_KEY = `xp-config-v2-${CHILD_ID}`;
+  function deepMerge(base, over){
+    if (Array.isArray(base)) return Array.isArray(over) ? over.slice() : base.slice();
+    if (base && typeof base==="object" && over && typeof over==="object"){
+      const out = {...base};
+      for (const k of Object.keys(over)) out[k] = k in base ? deepMerge(base[k], over[k]) : structuredClone(over[k]);
+      return out;
+    }
+    return over ?? base;
+  }
+  function loadCfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)||"null")||{}; }catch{ return {}; } }
+  function saveCfg(){ localStorage.setItem(CFG_KEY, JSON.stringify(CONFIG)); }
+
+  let CONFIG = deepMerge(DEFAULTS, loadCfg());
+
+  const getLevelStep = () => Math.max(1, Number(CONFIG.LEVEL_STEP||DEFAULTS.LEVEL_STEP));
+  const getSchoolNights = () => Array.isArray(CONFIG.SCHOOL_NIGHTS) ? CONFIG.SCHOOL_NIGHTS : DEFAULTS.SCHOOL_NIGHTS;
+  const getPackNights = () => Array.isArray(CONFIG.PACK_NIGHTS) ? CONFIG.PACK_NIGHTS : DEFAULTS.PACK_NIGHTS;
+  const getOnTimeXp = () => Math.max(0, Number(CONFIG.onTimeXp ?? DEFAULTS.onTimeXp));
+  const getTasks = () => CONFIG.tasks;
+  const getRewards = () => CONFIG.rewards;
+
+  // ----- Progress storage (per child) -----
+  const KEY = `xp-tracker-v6-${CHILD_ID}`;
+  let state = null;
+  try { state = JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ state = null; }
+  if(!state){
+    state = {
+      weekStart: getWeekStart(now()),
+      _alertLock:false,
+      child: initChild()
+    };
+    save();
+  } else {
+    if(!state.child) state.child = initChild();
+    if(!state.weekStart) state.weekStart = getWeekStart(now());
+    if(typeof state._alertLock!=="boolean") state._alertLock=false;
+  }
+
+  function initChild(){
+    return {
+      xp: 0,
+      level: 1,
+      weekXp: 0,
+      weekly: {
+        counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 },
+        flags:  { music:false, spanish:false, workout:false },
+        swimRequired: 0
+      },
+      today: {},
+      lastDate: null
+    };
+  }
+
+  function getWeekStart(d){
+    const dt = new Date(d);
+    const day = isoDow(dt);
+    dt.setDate(dt.getDate() - (day-1));
+    dt.setHours(0,0,0,0);
+    return fmtDate(dt);
+  }
+
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+  // DOM
+  const $ = s => document.querySelector(s);
+  const dateSpan = $("#date-span");
+  const taskList = $("#task-list");
+  const weeklyGoalsWrap = $("#weekly-goals");
+  const rewardsWrap = $("#rewards");
+
+  // Buttons
+  $("#reset-week").addEventListener("click", ()=>{
+    const pin = prompt("Enter parent PIN to start a new week:");
+    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    doNewWeekReset(true);
+  });
+
+  $("#toggle-ontime").addEventListener("click", ()=>{
+    const pin = prompt("Enter parent PIN to toggle On-Time bonus:");
+    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    const t = getTasks().find(x=>x.id==="ontime");
+    if(!t) return;
+    toggleTask(t);
+  });
+
+  $("#reset-today").addEventListener("click", ()=>{
+    if(!confirm("Reset today? This will clear today’s checkmarks and adjust XP and weekly goals accordingly.")) return;
+    resetToday();
+  });
+
+  $("#parent-mode").addEventListener("click", ()=>{
+    const pin = prompt("Enter Parent PIN:");
+    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    openSettings();
+  });
+
+  // Auto week reset
+  setInterval(()=>{ autoWeekRollover(); }, 60*1000);
+  function autoWeekRollover(){
+    const start = new Date(state.weekStart);
+    const nextStart = new Date(start); nextStart.setDate(start.getDate()+7);
+    if(now() >= nextStart){
+      doNewWeekReset(false);
+    }
+  }
+
+  function doNewWeekReset(showAlert){
+    state.child.weekly = {
+      counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 },
+      flags:  { music:false, spanish:false, workout:false },
+      swimRequired: 0
+    };
+    state.child.weekXp = 0;
+    state.child.today = {};
+    state.child.lastDate = null;
+    state.weekStart = getWeekStart(now());
+    save(); render();
+    if(showAlert) alert("New week started. Weekly counters reset.");
+  }
+
+  // Derived helpers
+  function tasksForTonight(){
+    const ctx = { dow: isoDow(now()), SCHOOL_NIGHTS: getSchoolNights(), PACK_NIGHTS: getPackNights() };
+    return getTasks().filter(t => {
+      if(t.special === "ontime") return false;
+      if(!t.showIf) return true;
+      try { return !!t.showIf(ctx); } catch { return true; }
+    });
+  }
+
+  // Daily boundary
+  function ensureToday(){
+    const d = now();
+    const dateStr = fmtDate(d);
+    const child = state.child;
+    if(child.lastDate !== dateStr){
+      child.today = {};
+      child.lastDate = dateStr;
+      save();
+    }
+  }
+
+  // XP
+  function applyXp(delta){
+    const ch = state.child;
+    ch.xp = Math.max(0, (ch.xp||0) + delta);
+    ch.weekXp = Math.max(0, (ch.weekXp||0) + delta);
+    levelCheck();
+  }
+
+  function levelCheck(){
+    const ch = state.child;
+    const step = getLevelStep();
+    if(state._alertLock) return;
+    while(ch.xp >= ch.level * step){
+      ch.level += 1;
+      state._alertLock = true;
+      setTimeout(()=>{
+        alert(`Rafe leveled up to Level ${ch.level}! Choose a reward.`);
+        state._alertLock = false;
+      },0);
+    }
+  }
+
+  function requiredSwimPacksThisWeek(){
+    const start = new Date(state.weekStart);
+    let count=0;
+    for(let i=0;i<7;i++){
+      const day = new Date(start); day.setDate(start.getDate()+i);
+      const dow = isoDow(day);
+      if(getPackNights().includes(dow)) count++;
+    }
+    return count;
+  }
+
+  function updateWeekly(task, nowDone){
+    const w = state.child.weekly;
+    if(!task.weekly) return;
+
+    const key = task.weekly.key;
+    const before = w.counts[key] || 0;
+    const after = clamp(before + (nowDone?1:-1), 0, 99);
+    w.counts[key] = after;
+
+    if(task.weekly.goalFrom === "swimRequired"){
+      w.swimRequired = requiredSwimPacksThisWeek();
+    }
+
+    if(typeof task.weekly.bonusAt === "number" && typeof task.weekly.bonusXp === "number"){
+      const flag = !!w.flags[key];
+      if(nowDone && after === task.weekly.bonusAt && !flag){
+        w.flags[key] = true;
+        applyXp(task.weekly.bonusXp);
+      } else if(!nowDone && before === task.weekly.bonusAt && after === task.weekly.bonusAt-1 && flag){
+        w.flags[key] = false;
+        applyXp(-task.weekly.bonusXp);
+      }
+    }
+  }
+
+  function toggleTask(task){
+    const ch = state.child;
+    const id = task.id;
+    const nowDone = !ch.today[id];
+    ch.today[id] = nowDone;
+
+    const delta = task.xp ? (nowDone ? task.xp : -task.xp) : 0;
+    if(delta) applyXp(delta);
+
+    updateWeekly(task, nowDone);
+
+    save(); render();
+  }
+
+  function resetToday(){
+    const ch = state.child;
+    const doneIds = Object.keys(ch.today).filter(id => ch.today[id]);
+
+    if(ch.today.ontime){
+      ch.today.ontime = false;
+      const t = getTasks().find(x=>x.id==="ontime");
+      if(t && t.xp) applyXp(-t.xp);
+    }
+
+    doneIds.forEach(id=>{
+      if(id==="ontime") return;
+      const t = getTasks().find(x=>x.id===id);
+      if(!t) return;
+      if(t.xp) applyXp(-t.xp);
+      updateWeekly(t, false);
+      ch.today[id] = false;
+    });
+
+    ch.today = {};
+    save(); render();
+  }
+
+  // Rendering
+  function render(){
+    ensureToday();
+    const d = now();
+    dateSpan.textContent = `• ${d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })}`;
+
+    // Tasks
+    const tonight = tasksForTonight();
+    taskList.innerHTML = "";
+    tonight.forEach(t=>{
+      const row = document.createElement("div");
+      row.className = "row" + (state.child.today[t.id] ? " done" : "");
+      row.dataset.id = t.id;
+      row.innerHTML = `
+        <div class="left">
+          <div class="icon" aria-hidden="true">${t.icon}</div>
+          <div>
+            <div class="label">${t.label}</div>
+            <div class="sub">${t.xp ? `Worth ${t.xp} XP` : `Optional / no XP`}</div>
+          </div>
+        </div>
+        <div class="xp">${t.xp?`+${t.xp} XP`:""}</div>
+      `;
+      row.addEventListener("click", ()=>toggleTask(t));
+      taskList.appendChild(row);
+    });
+
+    // Stats
+    const ch = state.child;
+    const step = getLevelStep();
+    document.getElementById("level").textContent = String(ch.level);
+    document.getElementById("xp").textContent = String(ch.xp);
+    document.getElementById("week-xp").textContent = String(ch.weekXp || 0);
+    const pct = ((ch.xp % step) / step) * 100;
+    document.getElementById("level-progress").style.width = `${isFinite(pct)?pct:0}%`;
+
+    // Weekly goals
+    const w = ch.weekly;
+    w.swimRequired = requiredSwimPacksThisWeek();
+    weeklyGoalsWrap.innerHTML = "";
+    getTasks().filter(t=>t.weekly).forEach(t=>{
+      const key = t.weekly.key;
+      const goal = t.weekly.goalFrom==="swimRequired" ? w.swimRequired : t.weekly.goal;
+      const icon = t.icon;
+      const label = t.id==="workout" ? "Swimmer Workouts" :
+                    t.id==="music" ? "Music sessions" :
+                    t.id==="spanish" ? "Spanish lessons" :
+                    t.id==="lunch" ? "Lunch packed (school nights)" :
+                    t.id==="swim" ? "Swim bag packed (required nights)" : t.label;
+      const sub = t.id==="lunch" ? "Mon–Fri" :
+                  t.id==="swim" ? "Auto-calculated" :
+                  t.weekly && t.weekly.bonusAt ? `Goal ${goal || t.weekly.goal} / week — extra bonus for ${t.weekly.bonusAt}+` :
+                  goal ? `Goal ${goal} / week` : "";
+
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `
+        <div class="left">
+          <div class="icon">${icon}</div>
+          <div>
+            <div class="label">${label}</div>
+            <div class="sub">${sub}</div>
+          </div>
+        </div>
+        <div><span class="pill">${(w.counts[key]||0)} / ${goal||0}</span></div>
+      `;
+      weeklyGoalsWrap.appendChild(row);
+    });
+
+    // Rewards
+    rewardsWrap.innerHTML = "";
+    const curLevel = ch.level;
+    getRewards().forEach(r=>{
+      const span = document.createElement("span");
+      span.className = "reward";
+      span.dataset.minlevel = r.minLevel||1;
+      span.textContent = r.label;
+      span.style.opacity = curLevel >= (r.minLevel||1) ? 1 : 0.5;
+      span.title = curLevel >= (r.minLevel||1) ? "" : `Unlocks at Level ${r.minLevel||1}`;
+      rewardsWrap.appendChild(span);
+    });
+
+    // On-time button text
+    document.getElementById("toggle-ontime").textContent = `+${getOnTimeXp()} XP`;
+  }
+
+  // Printing (unchanged except tasksForTonight use)
+  function printChecklist(){
+    const name = "Rafe";
+    const css = `
+      @page { size: A4; margin: 16mm; }
+      body { font-family: Inter, Arial, sans-serif; color: #0b1222; }
+      h2 { margin: 0 0 8px 0; }
+      .box { border: 2px solid #0f172a; border-radius: 12px; padding: 12px; }
+      .row { display: grid; grid-template-columns: 28px 1fr 22px; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #cbd5e1; }
+      .row:last-child{ border-bottom: none; }
+      .icon { font-size: 18px; text-align: center; }
+      .sub { color: #334155; font-size: 12px; }
+    `;
+    const tonight = tasksForTonight();
+    const rows = tonight.map(t => `
+      <div class="row"><div class="icon">${t.icon}</div><div>${t.label}</div><div>□</div></div>
+    `).join("");
+    const extra = `
+      <div class="row"><div class="icon">⭐</div><div>On-time: Ready to read by 8:30</div><div>□</div></div>
+      <div class="sub">Lights out 9:15 | Swim bag: suit, towel, goggles, cap, flip-flops</div>
+    `;
+    const html = `
+      <html><head><meta charset="utf-8"><title>${name} — Checklist</title><style>${css}</style></head>
+      <body>
+        <div class="box">
+          <h2>${name}</h2>
+          ${rows}
+          ${extra}
+        </div>
+      </body></html>
+    `;
+    openPrint(html);
+  }
+
+  function printLedger(){
+    const name = "Rafe";
+    const css = `
+      @page { size: A4; margin: 16mm; }
+      body { font-family: Inter, Arial, sans-serif; color: #0b1222; }
+      h2 { margin: 0 0 8px 0; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #94a3b8; padding: 6px; font-size: 12px; }
+      th { background: #e2e8f0; }
+      .sub { color: #334155; font-size: 12px; }
+    `;
+    const tonight = tasksForTonight();
+    const cols = ["Child","Day", ...tonight.map(t=>t.label), "On-Time","Daily XP"];
+    const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    const head = cols.map(c=>`<th>${c}</th>`).join("");
+    const rows = days.map(day=>{
+      const boxes = tonight.map(()=>"<td>□</td>").join("");
+      return `<tr><td>${name}</td><td>${day}</td>${boxes}<td>□</td><td></td></tr>`;
+    }).join("");
+    const html = `
+      <html><head><meta charset="utf-8"><title>${name} — Weekly XP Ledger</title><style>${css}</style></head>
+      <body>
+        <h2>Weekly XP Ledger — ${name}</h2>
+        <table>
+          <tr>${head}</tr>
+          ${rows}
+        </table>
+        <p class="sub">Weekly bonuses reflect your current settings.</p>
+      </body></html>
+    `;
+    openPrint(html);
+  }
+
+  function openPrint(html){
+    let win=null;
+    try{ win = window.open("", "_blank", "noopener,noreferrer"); }catch(e){ win=null; }
+    if(win && win.document){
+      win.document.open(); win.document.write(html); win.document.close();
+      win.onload = ()=>{ win.focus(); win.print(); };
+      setTimeout(()=>{ try{ win.focus(); win.print(); }catch(e){} }, 600);
+    } else {
+      const prev = document.documentElement.innerHTML;
+      const restore = ()=>{ document.open(); document.write(prev); document.close(); };
+      document.open(); document.write(html); document.close();
+      window.onafterprint = restore;
+      setTimeout(()=>window.print(), 50);
+    }
+  }
+
+  // Hook up print buttons
+  document.getElementById("print-checklist").addEventListener("click", printChecklist);
+  document.getElementById("print-ledger").addEventListener("click", printLedger);
+
+  // ----- Settings dialog logic -----
+  const dlg = document.getElementById("settingsDlg");
+  document.getElementById("cfg-close").addEventListener("click", ()=>dlg.close());
+  document.getElementById("cfg-export").addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify(CONFIG,null,2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${CHILD_ID}-settings.json`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 500);
+  });
+  document.getElementById("cfg-import").addEventListener("click", ()=>{
+    const pin = prompt("Enter Parent PIN:");
+    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "application/json";
+    inp.onchange = () => {
+      const f = inp.files[0]; if(!f) return;
+      f.text().then(txt=>{
+        try{
+          const json = JSON.parse(txt);
+          CONFIG = deepMerge(DEFAULTS, json);
+          saveCfg();
+          populateSettings();
+          render();
+          alert("Settings imported.");
+        }catch{ alert("Invalid JSON file."); }
+      });
+    };
+    inp.click();
+  });
+  document.getElementById("cfg-reset").addEventListener("click", ()=>{
+    const pin = prompt("Enter Parent PIN:");
+    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    if(!confirm("Reset settings to defaults?")) return;
+    CONFIG = structuredClone(DEFAULTS);
+    saveCfg();
+    populateSettings();
+    render();
+  });
+  document.getElementById("cfg-save").addEventListener("click", ()=>{
+    saveSettingsFromForm();
+    dlg.close();
+  });
+
+  // ----- Task/reward manager helpers -----
+  function uniqueTaskId(base="task"){
+    const used = new Set(CONFIG.tasks.map(t=>t.id));
+    let n = 1;
+    while(used.has(`${base}${n}`)) n++;
+    return `${base}${n}`;
+  }
+  function showIfPresetToFn(preset){
+    if(preset==="school") return (ctx)=>ctx.SCHOOL_NIGHTS.includes(ctx.dow);
+    if(preset==="pack") return (ctx)=>ctx.PACK_NIGHTS.includes(ctx.dow);
+    return undefined;
+  }
+  function fnToShowIfPreset(fn){
+    if(!fn) return "always";
+    const s = String(fn);
+    if (s.includes("SCHOOL_NIGHTS") && s.includes("includes")) return "school";
+    if (s.includes("PACK_NIGHTS") && s.includes("includes")) return "pack";
+    return "custom";
+  }
+
+  function renderRewardsManager(){
+    const wrap = document.getElementById("rewards-manager");
+    wrap.innerHTML = "";
+    getRewards().forEach((r, idx)=>{
+      const row = document.createElement("div");
+      row.className = "reward-row";
+      row.dataset.index = idx;
+      row.innerHTML = `
+        <div>
+          <label>Label</label>
+          <input type="text" value="${r.label||""}" data-f="label">
+        </div>
+        <div>
+          <label>Min level</label>
+          <input type="number" min="1" step="1" value="${r.minLevel||1}" data-f="minLevel">
+        </div>
+        <div>
+          <button class="chip" type="button" data-act="up">↑</button>
+          <button class="chip" type="button" data-act="down">↓</button>
+          <button class="chip" type="button" data-act="dup">Duplicate</button>
+          <button class="chip" type="button" data-act="del">Delete</button>
+        </div>
+      `;
+      row.querySelectorAll("[data-f]").forEach(inp=>{
+        inp.addEventListener("input", ()=>{
+          const rr = CONFIG.rewards[idx];
+          if(inp.getAttribute("data-f")==="label") rr.label = inp.value;
+          if(inp.getAttribute("data-f")==="minLevel"){
+            const v = Number(inp.value); rr.minLevel = isNaN(v)?1:Math.max(1,v);
+          }
+        });
+      });
+      row.querySelectorAll("[data-act]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const act = btn.getAttribute("data-act");
+          if(act==="up" && idx>0){ const tmp = CONFIG.rewards[idx-1]; CONFIG.rewards[idx-1]=CONFIG.rewards[idx]; CONFIG.rewards[idx]=tmp; renderRewardsManager(); }
+          if(act==="down" && idx<CONFIG.rewards.length-1){ const tmp = CONFIG.rewards[idx+1]; CONFIG.rewards[idx+1]=CONFIG.rewards[idx]; CONFIG.rewards[idx]=tmp; renderRewardsManager(); }
+          if(act==="dup"){ const copy = JSON.parse(JSON.stringify(CONFIG.rewards[idx])); CONFIG.rewards.splice(idx+1,0,copy); renderRewardsManager(); }
+          if(act==="del"){ CONFIG.rewards.splice(idx,1); renderRewardsManager(); }
+        });
+      });
+      wrap.appendChild(row);
+    });
+  }
+  document.getElementById("reward-add").addEventListener("click", ()=>{
+    CONFIG.rewards.push({ label:"New reward", minLevel:1 });
+    renderRewardsManager();
+  });
+
+  function renderTasksManager(){
+    const wrap = document.getElementById("tasks-manager");
+    wrap.innerHTML = "";
+    CONFIG.tasks.forEach((t, idx)=>{
+      const preset = fnToShowIfPreset(t.showIf);
+      const isOnTime = t.special === "ontime";
+      const card = document.createElement("div");
+      card.className = "task-card";
+      card.dataset.index = idx;
+
+      card.innerHTML = `
+        <div class="task-row">
+          <div>
+            <label>Icon</label>
+            <input type="text" value="${t.icon||""}" data-f="icon">
+          </div>
+          <div>
+            <label>Label</label>
+            <input type="text" value="${t.label||""}" data-f="label">
+          </div>
+          <div>
+            <label>XP</label>
+            <input type="number" min="0" step="1" value="${t.xp||0}" data-f="xp">
+          </div>
+          <div>
+            <label>Show on nights</label>
+            <select data-f="showIfPreset">
+              <option value="always" ${preset==="always"?"selected":""}>Always</option>
+              <option value="school" ${preset==="school"?"selected":""}>School nights</option>
+              <option value="pack" ${preset==="pack"?"selected":""}>Pack nights</option>
+              <option value="custom" ${preset==="custom"?"selected":""} disabled>Custom</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="inline" style="margin-top:8px">
+          <div style="min-width:160px">
+            <label>Task ID ${isOnTime?'<span class="small-note">(locked)</span>':''}</label>
+            <input type="text" value="${t.id}" data-f="id" ${isOnTime?'disabled':''}>
+          </div>
+          <div class="inline" style="gap:12px">
+            <label class="inline" style="gap:6px">
+              <input type="checkbox" data-f="weeklyOn" ${t.weekly?'checked':''}>
+              Weekly
+            </label>
+            <div class="inline" style="gap:8px">
+              <label>Key</label>
+              <input type="text" value="${t.weekly?.key||""}" data-f="weeklyKey" style="width:120px">
+            </div>
+            <div class="inline" style="gap:8px">
+              <label>Goal</label>
+              <input type="number" min="0" step="1" value="${t.weekly?.goal ?? ''}" data-f="weeklyGoal" style="width:100px">
+            </div>
+            <div class="inline" style="gap:8px">
+              <label>Bonus at</label>
+              <input type="number" min="0" step="1" value="${t.weekly?.bonusAt ?? ''}" data-f="weeklyBonusAt" style="width:100px">
+            </div>
+            <div class="inline" style="gap:8px">
+              <label>Bonus XP</label>
+              <input type="number" min="0" step="1" value="${t.weekly?.bonusXp ?? ''}" data-f="weeklyBonusXp" style="width:110px">
+            </div>
+            <label class="inline" style="gap:6px">
+              <input type="checkbox" data-f="weeklyGoalFromSwim" ${t.weekly?.goalFrom==="swimRequired"?'checked':''}>
+              Goal from swimRequired
+            </label>
+          </div>
+        </div>
+
+        <div class="task-actions">
+          <button class="chip" type="button" data-act="up">↑</button>
+          <button class="chip" type="button" data-act="down">↓</button>
+          <button class="chip" type="button" data-act="dup">Duplicate</button>
+          <button class="chip" type="button" data-act="del" ${isOnTime?'disabled':''}>Delete</button>
+        </div>
+      `;
+
+      // Inputs
+      card.querySelectorAll("[data-f]").forEach(inp=>{
+        inp.addEventListener("input", ()=> applyTaskEdit(idx));
+      });
+      // Actions
+      card.querySelectorAll("[data-act]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const act = btn.getAttribute("data-act");
+          if(act==="up" && idx>0){ const tmp = CONFIG.tasks[idx-1]; CONFIG.tasks[idx-1]=CONFIG.tasks[idx]; CONFIG.tasks[idx]=tmp; renderTasksManager(); }
+          if(act==="down" && idx<CONFIG.tasks.length-1){ const tmp = CONFIG.tasks[idx+1]; CONFIG.tasks[idx+1]=CONFIG.tasks[idx]; CONFIG.tasks[idx]=tmp; renderTasksManager(); }
+          if(act==="dup"){
+            const copy = JSON.parse(JSON.stringify(CONFIG.tasks[idx]));
+            copy.id = uniqueTaskId(copy.id.replace(/\d+$/,''));
+            CONFIG.tasks.splice(idx+1, 0, copy);
+            renderTasksManager();
+          }
+          if(act==="del"){
+            if(confirm("Delete this task?")){ CONFIG.tasks.splice(idx,1); renderTasksManager(); }
+          }
+        });
+      });
+
+      wrap.appendChild(card);
+    });
+  }
+
+  function applyTaskEdit(idx){
+    const card = document.querySelector(`.task-card[data-index="${idx}"]`);
+    if(!card) return;
+    const get = sel => card.querySelector(`[data-f="${sel}"]`);
+    const t = CONFIG.tasks[idx];
+
+    // Icon, label, xp
+    t.icon = get("icon").value;
+    t.label = get("label").value;
+    const nxp = Number(get("xp").value);
+    t.xp = isNaN(nxp) ? 0 : Math.max(0, nxp);
+
+    // ID (if not ontime) — note: changing ID does not migrate today's marks
+    if(t.special!=="ontime"){
+      const newId = get("id").value.trim() || t.id;
+      if(newId !== t.id){
+        if (CONFIG.tasks.some((x,i)=>i!==idx && x.id===newId)){
+          alert("That ID is already used. Please choose a unique ID.");
+          get("id").value = t.id;
+        } else {
+          t.id = newId;
+        }
+      }
+    }
+
+    // showIf preset
+    const preset = get("showIfPreset").value;
+    t.showIf = showIfPresetToFn(preset);
+
+    // Weekly toggle
+    const weeklyOn = get("weeklyOn").checked;
+    if(weeklyOn){
+      t.weekly = t.weekly || { key: t.id };
+      t.weekly.key = get("weeklyKey").value.trim() || t.id;
+      const g = get("weeklyGoal").value;
+      const ba = get("weeklyBonusAt").value;
+      const bx = get("weeklyBonusXp").value;
+      t.weekly.goal = g==="" ? undefined : Math.max(0, Number(g)||0);
+      t.weekly.bonusAt = ba==="" ? undefined : Math.max(0, Number(ba)||0);
+      t.weekly.bonusXp = bx==="" ? undefined : Math.max(0, Number(bx)||0);
+      t.weekly.goalFrom = get("weeklyGoalFromSwim").checked ? "swimRequired" : undefined;
+    } else {
+      delete t.weekly;
+    }
+  }
+
+  // ----- Settings populate/save -----
+  function populateSettings(){
+    document.getElementById("cfg-levelStep").value = getLevelStep();
+    document.getElementById("cfg-onTimeXp").value = getOnTimeXp();
+    document.getElementById("cfg-schoolNights").value = getSchoolNights().join(",");
+    document.getElementById("cfg-packNights").value = getPackNights().join(",");
+
+    const byKey = (key)=>CONFIG.tasks.find(t=>t.weekly && t.weekly.key===key);
+    const mus = byKey("music")?.weekly || {};
+    const spa = byKey("spanish")?.weekly || {};
+    const wor = byKey("workout")?.weekly || {};
+    document.getElementById("cfg-music-goal").value = mus.goal ?? 0;
+    document.getElementById("cfg-music-bonusAt").value = mus.bonusAt ?? 0;
+    document.getElementById("cfg-music-bonusXp").value = mus.bonusXp ?? 0;
+    document.getElementById("cfg-spanish-goal").value = spa.goal ?? 0;
+    document.getElementById("cfg-spanish-bonusAt").value = spa.bonusAt ?? 0;
+    document.getElementById("cfg-spanish-bonusXp").value = spa.bonusXp ?? 0;
+    document.getElementById("cfg-workout-goal").value = wor.goal ?? 0;
+    document.getElementById("cfg-workout-bonusAt").value = wor.bonusAt ?? 0;
+    document.getElementById("cfg-workout-bonusXp").value = wor.bonusXp ?? 0;
+
+    renderTasksManager();
+    renderRewardsManager();
+  }
+
+  function parseIntList(s){
+    return String(s||"").split(/[,\s]+/).map(x=>parseInt(x,10)).filter(n=>!isNaN(n) && n>=1 && n<=7).sort((a,b)=>a-b);
+  }
+
+  function saveSettingsFromForm(){
+    CONFIG.LEVEL_STEP = Math.max(1, Number(document.getElementById("cfg-levelStep").value||DEFAULTS.LEVEL_STEP));
+    CONFIG.onTimeXp = Math.max(0, Number(document.getElementById("cfg-onTimeXp").value||DEFAULTS.onTimeXp));
+    CONFIG.SCHOOL_NIGHTS = parseIntList(document.getElementById("cfg-schoolNights").value);
+    CONFIG.PACK_NIGHTS = parseIntList(document.getElementById("cfg-packNights").value);
+
+    const setWeekly = (key, goal, bonusAt, bonusXp)=>{
+      const t = CONFIG.tasks.find(x=>x.weekly && x.weekly.key===key);
+      if(!t) return;
+      t.weekly.goal = Math.max(0, Number(goal||0));
+      if(bonusAt!==undefined) t.weekly.bonusAt = Math.max(0, Number(bonusAt||0));
+      if(bonusXp!==undefined) t.weekly.bonusXp = Math.max(0, Number(bonusXp||0));
+    };
+    setWeekly("music",
+      document.getElementById("cfg-music-goal").value,
+      document.getElementById("cfg-music-bonusAt").value,
+      document.getElementById("cfg-music-bonusXp").value);
+    setWeekly("spanish",
+      document.getElementById("cfg-spanish-goal").value,
+      document.getElementById("cfg-spanish-bonusAt").value,
+      document.getElementById("cfg-spanish-bonusXp").value);
+    setWeekly("workout",
+      document.getElementById("cfg-workout-goal").value,
+      document.getElementById("cfg-workout-bonusAt").value,
+      document.getElementById("cfg-workout-bonusXp").value);
+
+    saveCfg();
+    render();
+    alert("Settings saved.");
+  }
+
+  // Open settings
+  function openSettings(){
+    populateSettings();
+    dlg.showModal();
+  }
+
+  // Start
+  render();
+})();
+</script>
+</body>
+</html>
