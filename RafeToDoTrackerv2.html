@@ -16,46 +16,44 @@
   @media(min-width:700px){ .grid{grid-template-columns:1fr 1fr} }
   .card{background:linear-gradient(180deg,#111827,#0b1020);border:1px solid #1f2937;border-radius:16px;padding:14px;box-shadow:var(--shadow)}
 
-  /* Brand header */
+  /* Brand/top bar */
   .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-  .brand{display:flex;gap:10px;align-items:center;min-width:0}
-  .brand-text{min-width:0}
-  .title{font-size:18px;font-weight:800;letter-spacing:.2px}
-  .subtitle{font-size:12px;color:#cbd5e1}
-  .actions{display:flex;gap:8px;flex-wrap:wrap}
-  .logo{width:38px;height:38px;flex:0 0 auto}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:36px;height:36px;flex:0 0 auto}
   .xp-badge{
     border-radius:10px;
     background:linear-gradient(145deg,#1f2a44,#0b1222);
     box-shadow:0 2px 10px rgba(0,0,0,.35), inset 0 0 0 1px #243042;
-    position:relative; overflow:hidden;
+    position:relative;
   }
   .xp-badge::after{
     content:"XP";
     position:absolute; inset:0;
     display:grid; place-items:center;
-    font-weight:900; letter-spacing:.5px;
+    font-weight:800; letter-spacing:.5px;
     color:#bbf7d0; font-size:14px;
-    text-shadow:0 1px 0 rgba(0,0,0,.6);
   }
+  .brand-text{display:flex;flex-direction:column;min-width:0}
+  .title{font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .subtitle{font-size:12px;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
 
   /* Rows */
   .row{
     display:flex;align-items:center;justify-content:space-between;gap:10px;
     padding:10px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)
   }
-  .row > *{ min-width:0 }                /* allow inner blocks to shrink/wrap */
+  .row > *{ min-width:0 }
   .row.done{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.35)}
   .left{display:flex;align-items:center;gap:10px;min-width:0}
-  .left > div{min-width:0}               /* label block can wrap text */
+  .left > div{min-width:0}
   .icon{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:#0b1222;border:1px solid #243042;flex:0 0 auto}
   .label{font-weight:600}
   .sub{font-size:12px;color:#cbd5e1}
   .xp{
     font-variant-numeric:tabular-nums;color:#bbf7d0;
-    white-space:nowrap;flex:0 0 auto   /* keep +10 XP on one line */
+    white-space:nowrap;flex:0 0 auto
   }
-
   .chip,button{
     background:var(--card);color:var(--text);border:1px solid #1f2937;border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:var(--shadow);
     transition:transform .05s ease, background .2s ease, border-color .2s ease
@@ -67,7 +65,10 @@
   .footer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:10px}
   .progress{height:10px;background:#0b1222;border:1px solid #243042;border-radius:999px;overflow:hidden;min-width:120px}
   .progress>div{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0%}
-  .pill{padding:4px 8px;border-radius:999px;background:#0b1222;border:1px solid #243042}
+  .pill{
+    padding:4px 8px;border-radius:999px;background:#0b1222;border:1px solid #243042;
+    font-variant-numeric:tabular-nums; white-space:nowrap  /* prevent wrap in weekly goals */
+  }
   .rewards{display:flex;flex-wrap:wrap;gap:8px}
   .reward{display:inline-flex;gap:8px;align-items:center;margin:4px 0;padding:6px 10px;border-radius:999px;border:1px solid #243042;background:#0b1222}
 
@@ -76,14 +77,12 @@
     .wrap{max-width:100%;padding:0}
     .card, .row, button, .chip{box-shadow:none}
     header, .nav{display:none !important}
-    #confetti-canvas{display:none !important}
-    audio{display:none !important}
   }
 
   /* Settings dialog */
-  dialog{border:none;border-radius:12px;padding:0;background:#0b1020;color:var(--text);box-shadow:var(--shadow);width:min(920px,96vw)}
+  dialog{border:none;border-radius:12px;padding:0;background:#0b1020;color:var(--text);box-shadow:var(--shadow);width:min(960px,96vw)}
   dialog::backdrop{background:rgba(0,0,0,.5)}
-  .dlg-head{padding:12px 14px;border-bottom:1px solid #1f2937;display:flex;justify-content:space-between;align-items:center}
+  .dlg-head{padding:12px 14px;border-bottom:1px solid #1f2937;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
   .dlg-title{font-weight:700}
   .dlg-body{padding:12px 14px;max-height:72vh;overflow:auto}
   .form-grid{display:grid;grid-template-columns:1fr;gap:10px}
@@ -95,7 +94,7 @@
   .dlg-actions{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px;border-top:1px solid #1f2937}
   .note{font-size:12px;color:#94a3b8}
 
-  /* Task manager helpers */
+  /* Task/Reward managers */
   .task-card{border:1px solid #243042;border-radius:10px;padding:10px;background:#0b1222}
   .task-row{display:grid;grid-template-columns:minmax(0,120px) minmax(200px,1fr) minmax(0,100px) minmax(0,160px);gap:8px}
   @media(max-width:920px){ .task-row{grid-template-columns:1fr 1fr} }
@@ -103,21 +102,16 @@
   .task-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
   .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
   .small-note{font-size:11px;color:#94a3b8}
-
-  /* Rewards manager */
   .reward-row{display:grid;grid-template-columns:minmax(0,1fr) 120px minmax(220px,1fr);gap:8px;align-items:end}
   @media(max-width:920px){ .reward-row{grid-template-columns:1fr 1fr} }
   .reward-row > div:last-child{display:flex;gap:6px;flex-wrap:wrap}
-
-  /* Make heavy editors span both columns */
   fieldset[data-span="full"]{grid-column:1 / -1}
 
-  /* Confetti canvas */
-  #confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999}
+  /* Confetti canvas overlay */
+  .confetti-layer{position:fixed;inset:0;pointer-events:none;z-index:9999}
 </style>
 </head>
 <body>
-<canvas id="confetti-canvas" width="0" height="0" aria-hidden="true"></canvas>
 <div class="wrap">
   <div id="app">
     <div class="topbar nav">
@@ -165,6 +159,9 @@
   </div>
 </div>
 
+<!-- Confetti canvas -->
+<canvas id="confetti" class="confetti-layer" aria-hidden="true"></canvas>
+
 <!-- Settings dialog -->
 <dialog id="settingsDlg">
   <div class="dlg-head">
@@ -208,23 +205,6 @@
           </div>
           <p class="note">Each reward can optionally require a minimum level.</p>
         </fieldset>
-
-        <fieldset>
-          <legend>Parent PIN & Recovery</legend>
-          <label>Current PIN
-            <input id="cfg-currentPin" type="password" inputmode="numeric" autocomplete="off" placeholder="Enter current PIN">
-          </label>
-          <label>New PIN
-            <input id="cfg-newPin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="4–8 digits">
-          </label>
-          <label>Confirm New PIN
-            <input id="cfg-newPin2" type="password" inputmode="numeric" autocomplete="new-password" placeholder="Repeat new PIN">
-          </label>
-          <label>Recovery hint (optional)
-            <input id="cfg-pinHint" type="text" maxlength="120" placeholder="E.g., Our old street number">
-          </label>
-          <p class="note">If you forget the PIN, the hint appears when prompted. You can always reset settings via browser storage if needed.</p>
-        </fieldset>
       </div>
 
       <div>
@@ -261,22 +241,6 @@
           </label>
         </fieldset>
 
-        <fieldset id="celebrate-fieldset">
-          <legend>Level-up Celebration</legend>
-          <label class="inline" style="gap:6px">
-            <input type="checkbox" id="cfg-confetti-on">
-            Enable confetti animation
-          </label>
-          <label class="inline" style="gap:6px">
-            <input type="checkbox" id="cfg-sound-on">
-            Enable level-up sound
-          </label>
-          <label>Sound volume
-            <input type="range" id="cfg-sound-vol" min="0" max="1" step="0.05">
-          </label>
-          <p class="note">Sound requires a user interaction first (browser policy). Confetti is lightweight and runs for ~1.5s.</p>
-        </fieldset>
-
         <fieldset id="tasks-fieldset" data-span="full">
           <legend>Tasks</legend>
           <div class="note" style="margin-bottom:8px">
@@ -286,6 +250,51 @@
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
             <button class="chip" type="button" id="task-add">Add Task</button>
           </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Level-up celebration</legend>
+          <label class="inline" style="gap:6px">
+            <input type="checkbox" id="cfg-confetti">
+            Confetti on level-up
+          </label>
+          <label class="inline" style="gap:6px">
+            <input type="checkbox" id="cfg-sound">
+            Sound on level-up
+          </label>
+          <p class="note">Sound uses a tiny synthesized chime (no external files). Respectful of device volume/mute.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Parent PIN</legend>
+          <label>New Parent PIN
+            <input id="cfg-newPin" type="text" inputmode="numeric" placeholder="Leave blank to keep current">
+          </label>
+          <label>Recovery hint (optional)
+            <input id="cfg-pinHint" type="text" placeholder="E.g., Last 4 of grandma’s phone">
+          </label>
+          <p class="note">If you forget the PIN, the hint displays when a wrong PIN is entered.</p>
+        </fieldset>
+
+        <!-- New: Manual XP Adjustment -->
+        <fieldset>
+          <legend>Manual XP Adjustment</legend>
+          <div class="inline" style="gap:10px; align-items:flex-end">
+            <div style="min-width:160px">
+              <label>Adjust XP (±)</label>
+              <input id="cfg-xp-delta" type="number" step="1" placeholder="e.g., 25 or -10">
+            </div>
+            <button class="chip" type="button" id="cfg-apply-delta">Apply to total & week XP</button>
+            <button class="chip" type="button" id="cfg-undo-delta">Undo last adjustment</button>
+          </div>
+          <div class="inline" style="gap:10px; margin-top:8px; align-items:flex-end">
+            <div style="min-width:160px">
+              <label>Set exact level (optional)</label>
+              <input id="cfg-set-level" type="number" min="1" step="1" placeholder="e.g., 3">
+            </div>
+            <button class="chip" type="button" id="cfg-apply-level">Set Level</button>
+          </div>
+          <p class="note">Adjust XP changes both total and Week XP and can trigger level-ups. “Set Level” only changes the level number.</p>
         </fieldset>
       </div>
     </div>
@@ -305,6 +314,9 @@
     SCHOOL_NIGHTS: [1,2,3,4,5],
     PACK_NIGHTS: [1,4,5],
     onTimeXp: 10,
+    celebrate: { confetti: true, sound: false },
+    parentPin: DEFAULT_PIN,
+    pinHint: "",
     tasks: [
       { id:"workout", icon:"🏊‍♂️", label:"Swimmer Workout", xp:10,
         weekly:{ key:"workout", goal:3, bonusAt:4, bonusXp:10 } },
@@ -332,10 +344,7 @@
       { label:"🎲 Board game with Dad", minLevel:1 },
       { label:"📱 30 min screen time", minLevel:1 },
       { label:"💵 $50 toward savings (Level 3+)", minLevel:3 }
-    ],
-    parentPin: DEFAULT_PIN,
-    pinHint: "",
-    celebrate: { confetti: true, sound: false, volume: 0.6 }
+    ]
   };
 
   const isoDow = d => { let n = d.getDay(); return n===0?7:n; };
@@ -370,12 +379,13 @@
   let state = null;
   try { state = JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ state = null; }
   if(!state){
-    state = { weekStart: getWeekStart(now()), _alertLock:false, child: initChild() };
+    state = { weekStart: getWeekStart(now()), _alertLock:false, adjustments:[], child: initChild() };
     save();
   } else {
     if(!state.child) state.child = initChild();
     if(!state.weekStart) state.weekStart = getWeekStart(now());
     if(typeof state._alertLock!=="boolean") state._alertLock=false;
+    if(!Array.isArray(state.adjustments)) state.adjustments=[];
   }
 
   function initChild(){
@@ -401,17 +411,16 @@
   const taskList = $("#task-list");
   const weeklyGoalsWrap = $("#weekly-goals");
   const rewardsWrap = $("#rewards");
-  const confettiCanvas = document.getElementById("confetti-canvas");
 
   $("#reset-week").addEventListener("click", ()=>{
-    const pin = promptWithHint("Enter parent PIN to start a new week:");
-    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    const pin = prompt("Enter parent PIN to start a new week:");
+    if(pin !== (CONFIG.parentPin||DEFAULTS.parentPin)){ alert(pinWrongMsg()); return; }
     doNewWeekReset(true);
   });
 
   $("#toggle-ontime").addEventListener("click", ()=>{
-    const pin = promptWithHint("Enter parent PIN to toggle On-Time bonus:");
-    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    const pin = prompt("Enter parent PIN to toggle On-Time bonus:");
+    if(pin !== (CONFIG.parentPin||DEFAULTS.parentPin)){ alert(pinWrongMsg()); return; }
     const t = getTasks().find(x=>x.id==="ontime");
     if(!t) return;
     toggleTask(t);
@@ -423,8 +432,8 @@
   });
 
   $("#parent-mode").addEventListener("click", ()=>{
-    const pin = promptWithHint("Enter Parent PIN:");
-    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    const pin = prompt("Enter Parent PIN:");
+    if(pin !== (CONFIG.parentPin||DEFAULTS.parentPin)){ alert(pinWrongMsg()); return; }
     openSettings();
   });
 
@@ -443,13 +452,6 @@
     state.weekStart = getWeekStart(now());
     save(); render();
     if(showAlert) alert("New week started. Weekly counters reset.");
-  }
-
-  function promptWithHint(message){
-    let msg = message;
-    const hint = CONFIG.pinHint?.trim();
-    if(hint) msg += `\nHint: ${hint}`;
-    return prompt(msg) || "";
   }
 
   function tasksForTonight(){
@@ -479,28 +481,92 @@
     levelCheck();
   }
 
-  function playCelebrate(){
-    if(CONFIG.celebrate?.confetti) runConfettiOnce();
-    if(CONFIG.celebrate?.sound) playLevelSound();
+  // Celebration controls
+  function pinWrongMsg(){
+    const hint = CONFIG.pinHint ? `\nHint: ${CONFIG.pinHint}` : "";
+    return `Incorrect PIN.${hint}`;
   }
 
   function levelCheck(){
     const ch = state.child;
     const step = getLevelStep();
     if(state._alertLock) return;
-    let leveled = false;
     while(ch.xp >= ch.level * step){
       ch.level += 1;
-      leveled = true;
-    }
-    if(leveled){
+      celebrateLevelUp();
       state._alertLock = true;
-      setTimeout(()=>{
-        alert(`Rafe leveled up to Level ${ch.level}! Choose a reward.`);
-        playCelebrate();
-        state._alertLock = false;
-      },0);
+      setTimeout(()=>{ state._alertLock = false; }, 400);
     }
+    // If XP goes down below current level threshold, keep the level (no level-down)
+  }
+
+  function celebrateLevelUp(){
+    if (CONFIG.celebrate?.confetti) runConfetti(900);
+    if (CONFIG.celebrate?.sound) playChime();
+    const name = "Rafe";
+    setTimeout(()=>{ alert(`${name} leveled up to Level ${state.child.level}! Choose a reward.`); }, 50);
+  }
+
+  // Confetti (tiny, dependency-free)
+  const confettiCanvas = document.getElementById("confetti");
+  let confettiCtx = confettiCanvas.getContext("2d");
+  function resizeConfetti(){
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeConfetti, {passive:true});
+  resizeConfetti();
+
+  function runConfetti(duration=800){
+    const colors = ["#22c55e","#3b82f6","#f59e0b","#ef4444","#a78bfa","#06b6d4"];
+    const count = Math.min(160, Math.floor((confettiCanvas.width*confettiCanvas.height)/25000));
+    const parts = Array.from({length: count}, ()=>({
+      x: Math.random()*confettiCanvas.width,
+      y: -10 - Math.random()*40,
+      s: 4 + Math.random()*6,
+      r: Math.random()*Math.PI,
+      v: 2 + Math.random()*3,
+      vr: (Math.random()-0.5)*0.3,
+      c: colors[(Math.random()*colors.length)|0]
+    }));
+    let start = performance.now();
+    function tick(t){
+      const elapsed = t - start;
+      confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+      parts.forEach(p=>{
+        p.y += p.v;
+        p.r += p.vr;
+        confettiCtx.save();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate(p.r);
+        confettiCtx.fillStyle = p.c;
+        confettiCtx.fillRect(-p.s/2, -p.s/2, p.s, p.s);
+        confettiCtx.restore();
+      });
+      if (elapsed < duration) requestAnimationFrame(tick);
+      else confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Simple chime via Web Audio
+  let audioCtx = null;
+  function playChime(){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      const o1 = audioCtx.createOscillator();
+      const g1 = audioCtx.createGain();
+      o1.type = "triangle";
+      o1.frequency.setValueAtTime(880, now);       // A5
+      o1.frequency.exponentialRampToValueAtTime(1320, now+0.18); // up-gliss
+      g1.gain.setValueAtTime(0.001, now);
+      g1.gain.exponentialRampToValueAtTime(0.2, now+0.02);
+      g1.gain.exponentialRampToValueAtTime(0.0001, now+0.5);
+      o1.connect(g1).connect(audioCtx.destination);
+      o1.start(now);
+      o1.stop(now+0.5);
+    }catch(e){ /* ignore if blocked */ }
   }
 
   function requiredSwimPacksThisWeek(){
@@ -738,7 +804,6 @@
   document.getElementById("print-checklist").addEventListener("click", printChecklist);
   document.getElementById("print-ledger").addEventListener("click", printLedger);
 
-  /* Settings dialog logic */
   const dlg = document.getElementById("settingsDlg");
   document.getElementById("cfg-close").addEventListener("click", ()=>dlg.close());
   document.getElementById("cfg-export").addEventListener("click", ()=>{
@@ -750,8 +815,8 @@
     setTimeout(()=>URL.revokeObjectURL(a.href), 500);
   });
   document.getElementById("cfg-import").addEventListener("click", ()=>{
-    const pin = promptWithHint("Enter Parent PIN:");
-    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    const pin = prompt("Enter Parent PIN:");
+    if(pin !== (CONFIG.parentPin||DEFAULTS.parentPin)){ alert(pinWrongMsg()); return; }
     const inp = document.createElement("input");
     inp.type = "file"; inp.accept = "application/json";
     inp.onchange = () => {
@@ -770,8 +835,8 @@
     inp.click();
   });
   document.getElementById("cfg-reset").addEventListener("click", ()=>{
-    const pin = promptWithHint("Enter Parent PIN:");
-    if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
+    const pin = prompt("Enter Parent PIN:");
+    if(pin !== (CONFIG.parentPin||DEFAULTS.parentPin)){ alert(pinWrongMsg()); return; }
     if(!confirm("Reset settings to defaults?")) return;
     CONFIG = structuredClone(DEFAULTS);
     saveCfg();
@@ -779,10 +844,33 @@
     render();
   });
   document.getElementById("cfg-save").addEventListener("click", ()=>{
-    const pinChangeResult = maybeChangePin();
-    if(pinChangeResult === false) return; // validation failed
     saveSettingsFromForm();
     dlg.close();
+  });
+
+  // New: manual adjustment handlers
+  document.getElementById("cfg-apply-delta").addEventListener("click", ()=>{
+    const val = Number(document.getElementById("cfg-xp-delta").value);
+    if(!Number.isFinite(val) || val===0){ alert("Enter a non-zero XP amount (e.g., 25 or -10)."); return; }
+    const before = { xp: state.child.xp, weekXp: state.child.weekXp };
+    applyXp(val);
+    state.adjustments.push({ t: Date.now(), delta: val });
+    save(); render();
+    alert(`Applied ${val>0?'+':''}${val} XP to total and week.`);
+  });
+  document.getElementById("cfg-undo-delta").addEventListener("click", ()=>{
+    const last = state.adjustments.pop();
+    if(!last){ alert("No manual adjustment to undo."); return; }
+    applyXp(-last.delta);
+    save(); render();
+    alert(`Undid last adjustment (${last.delta>0?'+':''}${last.delta} XP).`);
+  });
+  document.getElementById("cfg-apply-level").addEventListener("click", ()=>{
+    const lvl = Math.max(1, Number(document.getElementById("cfg-set-level").value||0));
+    if(!Number.isFinite(lvl) || lvl<1){ alert("Enter a valid level (1 or higher)."); return; }
+    state.child.level = Math.floor(lvl);
+    save(); render();
+    alert(`Level set to ${state.child.level}.`);
   });
 
   function uniqueTaskId(base="task"){
@@ -1001,34 +1089,17 @@
     document.getElementById("cfg-schoolNights").value = getSchoolNights().join(",");
     document.getElementById("cfg-packNights").value = getPackNights().join(",");
 
-    const byKey = (key)=>CONFIG.tasks.find(t=>t.weekly && t.weekly.key===key);
-    const mus = byKey("music")?.weekly || {};
-    const spa = byKey("spanish")?.weekly || {};
-    const wor = byKey("workout")?.weekly || {};
-    document.getElementById("cfg-music-goal").value = mus.goal ?? 0;
-    document.getElementById("cfg-music-bonusAt").value = mus.bonusAt ?? 0;
-    document.getElementById("cfg-music-bonusXp").value = mus.bonusXp ?? 0;
-    document.getElementById("cfg-spanish-goal").value = spa.goal ?? 0;
-    document.getElementById("cfg-spanish-bonusAt").value = spa.bonusAt ?? 0;
-    document.getElementById("cfg-spanish-bonusXp").value = spa.bonusXp ?? 0;
-    document.getElementById("cfg-workout-goal").value = wor.goal ?? 0;
-    document.getElementById("cfg-workout-bonusAt").value = wor.bonusAt ?? 0;
-    document.getElementById("cfg-workout-bonusXp").value = wor.bonusXp ?? 0;
+    // celebration
+    document.getElementById("cfg-confetti").checked = !!CONFIG.celebrate?.confetti;
+    document.getElementById("cfg-sound").checked = !!CONFIG.celebrate?.sound;
 
-    // PIN + hint
-    document.getElementById("cfg-currentPin").value = "";
+    // parent pin fields are blank by default
     document.getElementById("cfg-newPin").value = "";
-    document.getElementById("cfg-newPin2").value = "";
     document.getElementById("cfg-pinHint").value = CONFIG.pinHint || "";
 
-    // celebration
-    document.getElementById("cfg-confetti-on").checked = !!CONFIG.celebrate?.confetti;
-    document.getElementById("cfg-sound-on").checked = !!CONFIG.celebrate?.sound;
-    document.getElementById("cfg-sound-vol").value = Number(CONFIG.celebrate?.volume ?? 0.6);
-    document.getElementById("cfg-sound-vol").disabled = !document.getElementById("cfg-sound-on").checked;
-    document.getElementById("cfg-sound-on").addEventListener("change", (e)=>{
-      document.getElementById("cfg-sound-vol").disabled = !e.target.checked;
-    });
+    // clear manual fields
+    document.getElementById("cfg-xp-delta").value = "";
+    document.getElementById("cfg-set-level").value = "";
 
     renderTasksManager();
     renderRewardsManager();
@@ -1038,68 +1109,25 @@
     return String(s||"").split(/[,\s]+/).map(x=>parseInt(x,10)).filter(n=>!isNaN(n) && n>=1 && n<=7).sort((a,b)=>a-b);
   }
 
-  function maybeChangePin(){
-    const cur = (document.getElementById("cfg-currentPin").value || "").trim();
-    const np = (document.getElementById("cfg-newPin").value || "").trim();
-    const np2 = (document.getElementById("cfg-newPin2").value || "").trim();
-    const hint = (document.getElementById("cfg-pinHint").value || "").trim();
-
-    // Always allow updating hint
-    CONFIG.pinHint = hint;
-
-    // If no new PIN entered, nothing to change
-    if(!np && !np2){
-      return true;
-    }
-    // Validate current PIN
-    const currentPin = CONFIG.parentPin || DEFAULT_PIN;
-    if(cur !== currentPin){
-      alert("Current PIN is incorrect.");
-      return false;
-    }
-    if(np.length < 4 || np.length > 8 || !/^\d+$/.test(np)){
-      alert("New PIN must be 4–8 digits.");
-      return false;
-    }
-    if(np !== np2){
-      alert("New PIN entries do not match.");
-      return false;
-    }
-    CONFIG.parentPin = np;
-    return true;
-  }
-
   function saveSettingsFromForm(){
     CONFIG.LEVEL_STEP = Math.max(1, Number(document.getElementById("cfg-levelStep").value||DEFAULTS.LEVEL_STEP));
     CONFIG.onTimeXp = Math.max(0, Number(document.getElementById("cfg-onTimeXp").value||DEFAULTS.onTimeXp));
     CONFIG.SCHOOL_NIGHTS = parseIntList(document.getElementById("cfg-schoolNights").value);
     CONFIG.PACK_NIGHTS = parseIntList(document.getElementById("cfg-packNights").value);
 
-    // celebration settings
+    // celebration toggles
     CONFIG.celebrate = CONFIG.celebrate || {};
-    CONFIG.celebrate.confetti = !!document.getElementById("cfg-confetti-on").checked;
-    CONFIG.celebrate.sound = !!document.getElementById("cfg-sound-on").checked;
-    CONFIG.celebrate.volume = Number(document.getElementById("cfg-sound-vol").value || 0.6);
+    CONFIG.celebrate.confetti = document.getElementById("cfg-confetti").checked;
+    CONFIG.celebrate.sound = document.getElementById("cfg-sound").checked;
 
-    const setWeekly = (key, goal, bonusAt, bonusXp)=>{
-      const t = CONFIG.tasks.find(x=>x.weekly && x.weekly.key===key);
-      if(!t) return;
-      t.weekly.goal = Math.max(0, Number(goal||0));
-      if(bonusAt!==undefined) t.weekly.bonusAt = Math.max(0, Number(bonusAt||0));
-      if(bonusXp!==undefined) t.weekly.bonusXp = Math.max(0, Number(bonusXp||0));
-    };
-    setWeekly("music",
-      document.getElementById("cfg-music-goal").value,
-      document.getElementById("cfg-music-bonusAt").value,
-      document.getElementById("cfg-music-bonusXp").value);
-    setWeekly("spanish",
-      document.getElementById("cfg-spanish-goal").value,
-      document.getElementById("cfg-spanish-bonusAt").value,
-      document.getElementById("cfg-spanish-bonusXp").value);
-    setWeekly("workout",
-      document.getElementById("cfg-workout-goal").value,
-      document.getElementById("cfg-workout-bonusAt").value,
-      document.getElementById("cfg-workout-bonusXp").value);
+    // parent pin updates
+    const newPin = (document.getElementById("cfg-newPin").value || "").trim();
+    if(newPin){
+      if(!/^\d{4,10}$/.test(newPin)) { alert("PIN should be 4–10 digits."); return; }
+      CONFIG.parentPin = newPin;
+      alert("Parent PIN updated.");
+    }
+    CONFIG.pinHint = (document.getElementById("cfg-pinHint").value || "").trim();
 
     saveCfg();
     render();
@@ -1108,102 +1136,7 @@
 
   function openSettings(){
     populateSettings();
-    dlg.showModal();
-  }
-
-  /* Confetti + Sound */
-  let confettiTimer = null;
-  function resizeCanvas(){
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    confettiCanvas.width = Math.floor(window.innerWidth * dpr);
-    confettiCanvas.height = Math.floor(window.innerHeight * dpr);
-    confettiCanvas.style.width = "100vw";
-    confettiCanvas.style.height = "100vh";
-    confCtx.setTransform(dpr,0,0,dpr,0,0);
-  }
-  const confCtx = confettiCanvas.getContext("2d");
-  window.addEventListener("resize", resizeCanvas, { passive:true });
-  resizeCanvas();
-
-  function runConfettiOnce(){
-    cancelAnimationFrame(confettiTimer);
-    const pieces = [];
-    const colors = ["#22c55e","#3b82f6","#a78bfa","#facc15","#ef4444","#14b8a6"];
-    const N = Math.max(100, Math.min(220, Math.floor(window.innerWidth/6)));
-    for(let i=0;i<N;i++){
-      pieces.push({
-        x: Math.random()*window.innerWidth,
-        y: -20 - Math.random()*window.innerHeight*0.2,
-        r: 2 + Math.random()*4,
-        w: 6 + Math.random()*8,
-        h: 8 + Math.random()*10,
-        color: colors[Math.floor(Math.random()*colors.length)],
-        vy: 2 + Math.random()*3,
-        vx: -1 + Math.random()*2,
-        rot: Math.random()*Math.PI,
-        vr: (-0.1 + Math.random()*0.2)
-      });
-    }
-    const start = performance.now();
-    function tick(t){
-      const elapsed = t - start;
-      confCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-      for(const p of pieces){
-        p.x += p.vx;
-        p.y += p.vy;
-        p.rot += p.vr;
-        confCtx.save();
-        confCtx.translate(p.x, p.y);
-        confCtx.rotate(p.rot);
-        confCtx.fillStyle = p.color;
-        confCtx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-        confCtx.restore();
-      }
-      confettiTimer = requestAnimationFrame(tick);
-      if(elapsed > 1500){ cancelAnimationFrame(confettiTimer); }
-    }
-    confettiTimer = requestAnimationFrame(tick);
-  }
-
-  // Procedural simple “coin” chime (Web Audio) to avoid external files
-  let audioCtx = null;
-  function initAudio(){
-    if(!audioCtx){
-      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-      catch { audioCtx = null; }
-    }
-  }
-  document.addEventListener("click", initAudio, { once:true, capture:true });
-
-  function playLevelSound(){
-    if(!audioCtx) return;
-    const vol = Number(CONFIG.celebrate?.volume ?? 0.6);
-    const nowT = audioCtx.currentTime;
-    const g = audioCtx.createGain();
-    g.gain.value = 0.0001;
-    g.connect(audioCtx.destination);
-
-    function ping(freq, t0, dur){
-      const o = audioCtx.createOscillator();
-      o.type = "triangle";
-      o.frequency.setValueAtTime(freq, nowT + t0);
-      const gg = audioCtx.createGain();
-      gg.gain.setValueAtTime(0.0001, nowT + t0);
-      gg.gain.exponentialRampToValueAtTime(vol, nowT + t0 + 0.02);
-      gg.gain.exponentialRampToValueAtTime(0.0001, nowT + t0 + dur);
-      o.connect(gg); gg.connect(g);
-      o.start(nowT + t0);
-      o.stop(nowT + t0 + dur + 0.05);
-    }
-
-    // little ascending triad
-    ping(660, 0.00, 0.25);
-    ping(880, 0.06, 0.22);
-    ping(1046.5, 0.12, 0.22);
-
-    // master gain envelope
-    g.gain.exponentialRampToValueAtTime(vol, nowT + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, nowT + 0.6);
+    document.getElementById("settingsDlg").showModal();
   }
 
   render();
