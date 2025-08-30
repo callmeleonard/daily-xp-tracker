@@ -15,13 +15,22 @@
   .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
   @media(min-width:700px){ .grid{grid-template-columns:1fr 1fr} }
   .card{background:linear-gradient(180deg,#111827,#0b1020);border:1px solid #1f2937;border-radius:16px;padding:14px;box-shadow:var(--shadow)}
-  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+  /* Rows */
+  .row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)
+  }
+  .row > *{ min-width:0 }                /* allow inner blocks to shrink/wrap */
   .row.done{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.35)}
-  .left{display:flex;align-items:center;gap:10px}
-  .icon{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:#0b1222;border:1px solid #243042}
+  .left{display:flex;align-items:center;gap:10px;min-width:0}
+  .left > div{min-width:0}               /* label block can wrap text */
+  .icon{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:#0b1222;border:1px solid #243042;flex:0 0 auto}
   .label{font-weight:600}
   .sub{font-size:12px;color:#cbd5e1}
-  .xp{font-variant-numeric:tabular-nums;color:#bbf7d0}
+  .xp{
+    font-variant-numeric:tabular-nums;color:#bbf7d0;
+    white-space:nowrap;flex:0 0 auto   /* keep +10 XP on one line */
+  }
   .chip,button{
     background:var(--card);color:var(--text);border:1px solid #1f2937;border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:var(--shadow);
     transition:transform .05s ease, background .2s ease, border-color .2s ease
@@ -217,13 +226,9 @@
 
 <script>
 (function(){
-  // ----- Per-child identity -----
   const CHILD_ID = "rafe";
-
-  // ----- PIN -----
   const DEFAULT_PIN = "7497";
 
-  // ----- Default config derived from your original file -----
   const DEFAULTS = {
     LEVEL_STEP: 120,
     SCHOOL_NIGHTS: [1,2,3,4,5],
@@ -260,14 +265,12 @@
     parentPin: DEFAULT_PIN
   };
 
-  // ----- Utilities -----
-  const isoDow = d => { let n = d.getDay(); return n===0?7:n; }; // 1..7
+  const isoDow = d => { let n = d.getDay(); return n===0?7:n; };
   const pad = n => String(n).padStart(2,'0');
   const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   const now = () => new Date();
   const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
 
-  // ----- Config storage (per child) -----
   const CFG_KEY = `xp-config-v2-${CHILD_ID}`;
   function deepMerge(base, over){
     if (Array.isArray(base)) return Array.isArray(over) ? over.slice() : base.slice();
@@ -290,16 +293,11 @@
   const getTasks = () => CONFIG.tasks;
   const getRewards = () => CONFIG.rewards;
 
-  // ----- Progress storage (per child) -----
   const KEY = `xp-tracker-v6-${CHILD_ID}`;
   let state = null;
   try { state = JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ state = null; }
   if(!state){
-    state = {
-      weekStart: getWeekStart(now()),
-      _alertLock:false,
-      child: initChild()
-    };
+    state = { weekStart: getWeekStart(now()), _alertLock:false, child: initChild() };
     save();
   } else {
     if(!state.child) state.child = initChild();
@@ -309,16 +307,9 @@
 
   function initChild(){
     return {
-      xp: 0,
-      level: 1,
-      weekXp: 0,
-      weekly: {
-        counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 },
-        flags:  { music:false, spanish:false, workout:false },
-        swimRequired: 0
-      },
-      today: {},
-      lastDate: null
+      xp: 0, level: 1, weekXp: 0,
+      weekly: { counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 }, flags: { music:false, spanish:false, workout:false }, swimRequired: 0 },
+      today: {}, lastDate: null
     };
   }
 
@@ -332,14 +323,12 @@
 
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 
-  // DOM
   const $ = s => document.querySelector(s);
   const dateSpan = $("#date-span");
   const taskList = $("#task-list");
   const weeklyGoalsWrap = $("#weekly-goals");
   const rewardsWrap = $("#rewards");
 
-  // Buttons
   $("#reset-week").addEventListener("click", ()=>{
     const pin = prompt("Enter parent PIN to start a new week:");
     if(pin !== (CONFIG.parentPin||DEFAULT_PIN)){ alert("Incorrect PIN."); return; }
@@ -365,22 +354,15 @@
     openSettings();
   });
 
-  // Auto week reset
   setInterval(()=>{ autoWeekRollover(); }, 60*1000);
   function autoWeekRollover(){
     const start = new Date(state.weekStart);
     const nextStart = new Date(start); nextStart.setDate(start.getDate()+7);
-    if(now() >= nextStart){
-      doNewWeekReset(false);
-    }
+    if(now() >= nextStart){ doNewWeekReset(false); }
   }
 
   function doNewWeekReset(showAlert){
-    state.child.weekly = {
-      counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 },
-      flags:  { music:false, spanish:false, workout:false },
-      swimRequired: 0
-    };
+    state.child.weekly = { counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 }, flags: { music:false, spanish:false, workout:false }, swimRequired: 0 };
     state.child.weekXp = 0;
     state.child.today = {};
     state.child.lastDate = null;
@@ -389,7 +371,6 @@
     if(showAlert) alert("New week started. Weekly counters reset.");
   }
 
-  // Derived helpers
   function tasksForTonight(){
     const ctx = { dow: isoDow(now()), SCHOOL_NIGHTS: getSchoolNights(), PACK_NIGHTS: getPackNights() };
     return getTasks().filter(t => {
@@ -399,7 +380,6 @@
     });
   }
 
-  // Daily boundary
   function ensureToday(){
     const d = now();
     const dateStr = fmtDate(d);
@@ -411,7 +391,6 @@
     }
   }
 
-  // XP
   function applyXp(delta){
     const ch = state.child;
     ch.xp = Math.max(0, (ch.xp||0) + delta);
@@ -447,7 +426,6 @@
   function updateWeekly(task, nowDone){
     const w = state.child.weekly;
     if(!task.weekly) return;
-
     const key = task.weekly.key;
     const before = w.counts[key] || 0;
     const after = clamp(before + (nowDone?1:-1), 0, 99);
@@ -477,9 +455,7 @@
 
     const delta = task.xp ? (nowDone ? task.xp : -task.xp) : 0;
     if(delta) applyXp(delta);
-
     updateWeekly(task, nowDone);
-
     save(); render();
   }
 
@@ -506,13 +482,11 @@
     save(); render();
   }
 
-  // Rendering
   function render(){
     ensureToday();
     const d = now();
     dateSpan.textContent = `• ${d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })}`;
 
-    // Tasks
     const tonight = tasksForTonight();
     taskList.innerHTML = "";
     tonight.forEach(t=>{
@@ -533,7 +507,6 @@
       taskList.appendChild(row);
     });
 
-    // Stats
     const ch = state.child;
     const step = getLevelStep();
     document.getElementById("level").textContent = String(ch.level);
@@ -542,7 +515,6 @@
     const pct = ((ch.xp % step) / step) * 100;
     document.getElementById("level-progress").style.width = `${isFinite(pct)?pct:0}%`;
 
-    // Weekly goals
     const w = ch.weekly;
     w.swimRequired = requiredSwimPacksThisWeek();
     weeklyGoalsWrap.innerHTML = "";
@@ -575,7 +547,6 @@
       weeklyGoalsWrap.appendChild(row);
     });
 
-    // Rewards
     rewardsWrap.innerHTML = "";
     const curLevel = ch.level;
     getRewards().forEach(r=>{
@@ -588,11 +559,9 @@
       rewardsWrap.appendChild(span);
     });
 
-    // On-time button text
     document.getElementById("toggle-ontime").textContent = `+${getOnTimeXp()} XP`;
   }
 
-  // Printing (unchanged except tasksForTonight use)
   function printChecklist(){
     const name = "Rafe";
     const css = `
@@ -675,11 +644,9 @@
     }
   }
 
-  // Hook up print buttons
   document.getElementById("print-checklist").addEventListener("click", printChecklist);
   document.getElementById("print-ledger").addEventListener("click", printLedger);
 
-  // ----- Settings dialog logic -----
   const dlg = document.getElementById("settingsDlg");
   document.getElementById("cfg-close").addEventListener("click", ()=>dlg.close());
   document.getElementById("cfg-export").addEventListener("click", ()=>{
@@ -724,7 +691,6 @@
     dlg.close();
   });
 
-  // ----- Task/reward manager helpers -----
   function uniqueTaskId(base="task"){
     const used = new Set(CONFIG.tasks.map(t=>t.id));
     let n = 1;
@@ -869,11 +835,9 @@
         </div>
       `;
 
-      // Inputs
       card.querySelectorAll("[data-f]").forEach(inp=>{
         inp.addEventListener("input", ()=> applyTaskEdit(idx));
       });
-      // Actions
       card.querySelectorAll("[data-act]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const act = btn.getAttribute("data-act");
@@ -901,13 +865,11 @@
     const get = sel => card.querySelector(`[data-f="${sel}"]`);
     const t = CONFIG.tasks[idx];
 
-    // Icon, label, xp
     t.icon = get("icon").value;
     t.label = get("label").value;
     const nxp = Number(get("xp").value);
     t.xp = isNaN(nxp) ? 0 : Math.max(0, nxp);
 
-    // ID (if not ontime) — note: changing ID does not migrate today's marks
     if(t.special!=="ontime"){
       const newId = get("id").value.trim() || t.id;
       if(newId !== t.id){
@@ -920,11 +882,9 @@
       }
     }
 
-    // showIf preset
     const preset = get("showIfPreset").value;
     t.showIf = showIfPresetToFn(preset);
 
-    // Weekly toggle
     const weeklyOn = get("weeklyOn").checked;
     if(weeklyOn){
       t.weekly = t.weekly || { key: t.id };
@@ -941,7 +901,6 @@
     }
   }
 
-  // ----- Settings populate/save -----
   function populateSettings(){
     document.getElementById("cfg-levelStep").value = getLevelStep();
     document.getElementById("cfg-onTimeXp").value = getOnTimeXp();
@@ -1001,13 +960,11 @@
     alert("Settings saved.");
   }
 
-  // Open settings
   function openSettings(){
     populateSettings();
     dlg.showModal();
   }
 
-  // Start
   render();
 })();
 </script>
