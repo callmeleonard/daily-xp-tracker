@@ -67,7 +67,7 @@
   .progress>div{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0%}
   .pill{
     padding:4px 8px;border-radius:999px;background:#0b1222;border:1px solid #243042;
-    font-variant-numeric:tabular-nums; white-space:nowrap  /* prevent wrap in weekly goals */
+    font-variant-numeric:tabular-nums; white-space:nowrap
   }
   .rewards{display:flex;flex-wrap:wrap;gap:8px}
   .reward{display:inline-flex;gap:8px;align-items:center;margin:4px 0;padding:6px 10px;border-radius:999px;border:1px solid #243042;background:#0b1222}
@@ -306,6 +306,11 @@
 
 <script>
 (function(){
+  // Polyfill structuredClone for older browsers
+  if (typeof window.structuredClone !== "function") {
+    window.structuredClone = obj => JSON.parse(JSON.stringify(obj));
+  }
+
   const CHILD_ID = "rafe";
   const DEFAULT_PIN = "7497";
 
@@ -454,8 +459,11 @@
     if(showAlert) alert("New week started. Weekly counters reset.");
   }
 
+  // PATCH: safer context + robust filtering
   function tasksForTonight(){
-    const ctx = { dow: isoDow(now()), SCHOOL_NIGHTS: getSchoolNights(), PACK_NIGHTS: getPackNights() };
+    const schools = Array.isArray(getSchoolNights()) ? getSchoolNights() : [];
+    const packs = Array.isArray(getPackNights()) ? getPackNights() : [];
+    const ctx = { dow: isoDow(now()), SCHOOL_NIGHTS: schools, PACK_NIGHTS: packs };
     return getTasks().filter(t => {
       if(t.special === "ontime") return false;
       if(!t.showIf) return true;
@@ -497,7 +505,6 @@
       state._alertLock = true;
       setTimeout(()=>{ state._alertLock = false; }, 400);
     }
-    // If XP goes down below current level threshold, keep the level (no level-down)
   }
 
   function celebrateLevelUp(){
@@ -946,6 +953,12 @@
     wrap.innerHTML = "";
     CONFIG.tasks.forEach((t, idx)=>{
       const preset = fnToShowIfPreset(t.showIf);
+      // PATCH: keep swim/lunch aligned with schedule presets when undefined/always/custom
+      const effectivePreset =
+        t.id === "swim"  ? ((preset === "always" || preset === "custom") ? "pack"   : preset) :
+        t.id === "lunch" ? ((preset === "always" || preset === "custom") ? "school" : preset) :
+        preset;
+
       const isOnTime = t.special === "ontime";
       const card = document.createElement("div");
       card.className = "task-card";
@@ -968,10 +981,10 @@
           <div>
             <label>Show on nights</label>
             <select data-f="showIfPreset">
-              <option value="always" ${preset==="always"?"selected":""}>Always</option>
-              <option value="school" ${preset==="school"?"selected":""}>School nights</option>
-              <option value="pack" ${preset==="pack"?"selected":""}>Pack nights</option>
-              <option value="custom" ${preset==="custom"?"selected":""} disabled>Custom</option>
+              <option value="always" ${effectivePreset==="always"?"selected":""}>Always</option>
+              <option value="school" ${effectivePreset==="school"?"selected":""}>School nights</option>
+              <option value="pack" ${effectivePreset==="pack"?"selected":""}>Pack nights</option>
+              <option value="custom" ${effectivePreset==="custom"?"selected":""} disabled>Custom</option>
             </select>
           </div>
         </div>
@@ -1064,8 +1077,13 @@
       }
     }
 
-    const preset = get("showIfPreset").value;
-    t.showIf = showIfPresetToFn(preset);
+    const chosen = get("showIfPreset").value;
+    // PATCH: keep swim/lunch on their intended preset if "always" was chosen
+    const finalPreset =
+      t.id === "swim"  && chosen === "always" ? "pack"   :
+      t.id === "lunch" && chosen === "always" ? "school" :
+      chosen;
+    t.showIf = showIfPresetToFn(finalPreset);
 
     const weeklyOn = get("weeklyOn").checked;
     if(weeklyOn){
@@ -1105,8 +1123,13 @@
     renderRewardsManager();
   }
 
+  // PATCH: more forgiving schedule parsing
   function parseIntList(s){
-    return String(s||"").split(/[,\s]+/).map(x=>parseInt(x,10)).filter(n=>!isNaN(n) && n>=1 && n<=7).sort((a,b)=>a-b);
+    return String(s||"")
+      .split(/[,\s]+/)
+      .map(x => parseInt(String(x).trim(), 10))
+      .filter(n => Number.isInteger(n) && n>=1 && n<=7)
+      .sort((a,b)=>a-b);
   }
 
   function saveSettingsFromForm(){
