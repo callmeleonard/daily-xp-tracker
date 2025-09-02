@@ -7,79 +7,129 @@
 <style>
   :root{
     --bg:#0f172a;--card:#111827;--muted:#334155;--text:#e5e7eb;
-    --accent:#22c55e;--accent2:#3b82f6;--shadow:0 10px 30px rgba(0,0,0,.35);
+    --accent:#22c55e;--accent2:#3b82f6;--shadow:0 12px 40px rgba(0,0,0,.45);
+    --ringTrack:#1f2937; --ringGrad1:#22c55e; --ringGrad2:#3b82f6;
   }
+
   html,body{margin:0;padding:0;background:linear-gradient(160deg,#0b1222,#0f172a 40%,#0b1222);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
-  .wrap{max-width:960px;margin:0 auto;padding:16px}
-  h1,h2,h3{margin:8px 0}
+
+  /* Starfield background */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.35;
+    background:
+      radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.12), transparent 60%),
+      radial-gradient(1.5px 1.5px at 70% 80%, rgba(255,255,255,.09), transparent 60%),
+      radial-gradient(1.2px 1.2px at 40% 70%, rgba(255,255,255,.08), transparent 60%),
+      radial-gradient(1.3px 1.3px at 80% 25%, rgba(255,255,255,.1), transparent 60%),
+      radial-gradient(1.2px 1.2px at 30% 85%, rgba(255,255,255,.08), transparent 60%);
+    animation: drift 80s linear infinite;
+  }
+  @keyframes drift{ from{ transform:translateY(0) } to{ transform:translateY(-140px) } }
+
+  .wrap{max-width:960px;margin:0 auto;padding:16px;position:relative;z-index:1}
   .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
   @media(min-width:700px){ .grid{grid-template-columns:1fr 1fr} }
-  .card{background:linear-gradient(180deg,#111827,#0b1020);border:1px solid #1f2937;border-radius:16px;padding:14px;box-shadow:var(--shadow)}
 
-  /* Brand/top bar */
-  .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-  .brand{display:flex;align-items:center;gap:10px;min-width:0}
-  .logo{width:36px;height:36px;flex:0 0 auto}
-  .xp-badge{
-    border-radius:10px;
-    background:linear-gradient(145deg,#1f2a44,#0b1222);
-    box-shadow:0 2px 10px rgba(0,0,0,.35), inset 0 0 0 1px #243042;
-    position:relative;
+  /* Card depth and shine */
+  .card{
+    background:linear-gradient(180deg,#0f172a 0%, #0b1020 60%, #0a0f1c 100%);
+    border:1px solid rgba(148,163,184,.15);
+    border-radius:16px;padding:14px;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.035);
+    position:relative; overflow:hidden;
   }
-  .xp-badge::after{
-    content:"XP";
-    position:absolute; inset:0;
+  .card::after{
+    content:""; position:absolute; inset:-1px; pointer-events:none;
+    background: radial-gradient(1000px 120px at 20% -40px, rgba(255,255,255,.06), transparent 60%);
+  }
+
+  /* Top bar with level crest */
+  .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .crest{
+    width:44px; height:44px; position:relative; flex:0 0 auto;
     display:grid; place-items:center;
-    font-weight:800; letter-spacing:.5px;
-    color:#bbf7d0; font-size:14px;
+  }
+  .crest svg{ display:block; width:44px; height:44px; }
+  .crest .lvl{
+    position:absolute; font-weight:800; font-size:12px; letter-spacing:.3px; color:#bbf7d0; text-shadow:0 1px 1px rgba(0,0,0,.4);
   }
   .brand-text{display:flex;flex-direction:column;min-width:0}
   .title{font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .subtitle{font-size:12px;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .actions{display:flex;gap:8px;flex-wrap:wrap}
 
-  /* Rows */
+  /* Rows + interactions */
   .row{
     display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:10px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)
+    padding:10px 12px;margin:6px 0;border-radius:12px;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
+    transition: transform .12s ease, background .2s ease, border-color .2s ease;
   }
-  .row > *{ min-width:0 }
-  .row.done{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.35)}
+  .row:hover{ transform: translateY(-1px); }
+  .row.done{
+    background:linear-gradient(180deg, rgba(34,197,94,.22), rgba(34,197,94,.12));
+    border-color:rgba(34,197,94,.45);
+  }
   .left{display:flex;align-items:center;gap:10px;min-width:0}
-  .left > div{min-width:0}
-  .icon{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:#0b1222;border:1px solid #243042;flex:0 0 auto}
+  .icon{
+    width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:#0b1222;border:1px solid #243042;flex:0 0 auto;
+    position:relative;
+  }
+  .icon::after{content:""; position:absolute; inset:-2px; border-radius:8px; box-shadow:0 0 18px rgba(59,130,246,.45); opacity:.18;}
+  .row.done .icon{ border-color: rgba(34,197,94,.6); box-shadow: 0 0 0 2px rgba(34,197,94,.12); }
   .label{font-weight:600}
   .sub{font-size:12px;color:#cbd5e1}
-  .xp{
-    font-variant-numeric:tabular-nums;color:#bbf7d0;
-    white-space:nowrap;flex:0 0 auto
-  }
+  .xp{font-variant-numeric:tabular-nums;color:#bbf7d0;white-space:nowrap;flex:0 0 auto}
+
   .chip,button{
     background:var(--card);color:var(--text);border:1px solid #1f2937;border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:var(--shadow);
     transition:transform .05s ease, background .2s ease, border-color .2s ease
   }
   button:active{transform:scale(.98)}
   .chip{font-size:14px}
+  .chip.small{padding:6px 10px;font-size:12px}
   .active{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(59,130,246,.35), var(--shadow)}
+
   .section-title{font-size:14px;color:#a5b4fc;margin:6px 0 2px 2px;letter-spacing:.4px}
   .footer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:10px}
-  .progress{height:10px;background:#0b1222;border:1px solid #243042;border-radius:999px;overflow:hidden;min-width:120px}
-  .progress>div{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0%}
-  .pill{
-    padding:4px 8px;border-radius:999px;background:#0b1222;border:1px solid #243042;
-    font-variant-numeric:tabular-nums; white-space:nowrap
+
+  /* Progress with sheen */
+  .progress{height:10px;background:#0b1222;border:1px solid #243042;border-radius:999px;overflow:hidden;min-width:120px; position:relative}
+  .progress>div{
+    height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));
+    width:0%; transition:width .6s cubic-bezier(.22,.61,.36,1); position:relative;
   }
+  .progress>div::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(120deg,transparent 0%, rgba(255,255,255,.25) 40%, transparent 80%);
+    transform:translateX(-100%); animation:shine 2.8s linear infinite;
+  }
+  @keyframes shine{ to{ transform:translateX(100%); } }
+
+  /* XP pulse */
+  #xp.pulse{ animation: xpPulse .35s ease; }
+  @keyframes xpPulse{ 0%{transform:scale(1); color:#bbf7d0} 50%{transform:scale(1.12); color:#86efac} 100%{transform:scale(1); color:#bbf7d0} }
+
+  .pill{padding:4px 8px;border-radius:999px;background:#0b1222;border:1px solid #243042;font-variant-numeric:tabular-nums;white-space:nowrap}
   .rewards{display:flex;flex-wrap:wrap;gap:8px}
-  .reward{display:inline-flex;gap:8px;align-items:center;margin:4px 0;padding:6px 10px;border-radius:999px;border:1px solid #243042;background:#0b1222}
+  .reward{
+    display:inline-flex;gap:8px;align-items:center;margin:4px 0;padding:6px 10px;border-radius:999px;border:1px solid #243042;
+    background: linear-gradient(180deg,#0b1222,#0b1628);
+  }
+  .reward[data-minlevel="1"]{ box-shadow: inset 0 0 0 1px rgba(59,130,246,.35); }
+  .reward[data-minlevel="2"]{ box-shadow: inset 0 0 0 1px rgba(99,102,241,.35); }
+  .reward[data-minlevel="3"]{ box-shadow: inset 0 0 0 1px rgba(34,197,94,.35); }
+  .reward[data-minlevel="4"]{ box-shadow: inset 0 0 0 1px rgba(234,179,8,.35); }
+  .reward[data-minlevel="5"]{ box-shadow: inset 0 0 0 1px rgba(244,63,94,.35); }
 
   @media print{
     body{background:#fff;color:#000}
     .wrap{max-width:100%;padding:0}
     .card, .row, button, .chip{box-shadow:none}
-    header, .nav{display:none !important}
+    header, .nav, .crest svg, .crest .lvl{display:none !important}
   }
 
-  /* Settings dialog */
   dialog{border:none;border-radius:12px;padding:0;background:#0b1020;color:var(--text);box-shadow:var(--shadow);width:min(960px,96vw)}
   dialog::backdrop{background:rgba(0,0,0,.5)}
   .dlg-head{padding:12px 14px;border-bottom:1px solid #1f2937;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
@@ -88,27 +138,21 @@
   .form-grid{display:grid;grid-template-columns:1fr;gap:10px}
   @media(min-width:920px){ .form-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start; } }
   label{display:block;font-size:12px;color:#cbd5e1;margin-bottom:4px}
-  input[type="text"],input[type="number"],textarea,select{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #243042;background:#0b1222;color:var(--text);min-width:0}
+  input[type="text"],input[type="number"],textarea{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #243042;background:#0b1222;color:var(--text);min-width:0}
   fieldset{border:1px solid #243042;border-radius:10px;padding:10px}
   legend{padding:0 6px;color:#a5b4fc}
   .dlg-actions{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px;border-top:1px solid #1f2937}
   .note{font-size:12px;color:#94a3b8}
 
-  /* Task/Reward managers */
   .task-card{border:1px solid #243042;border-radius:10px;padding:10px;background:#0b1222}
-  .task-row{display:grid;grid-template-columns:minmax(0,120px) minmax(200px,1fr) minmax(0,100px) minmax(0,160px);gap:8px}
+  .task-row{display:grid;grid-template-columns:minmax(0,120px) minmax(220px,1fr) minmax(0,100px) minmax(0,240px);gap:8px}
   @media(max-width:920px){ .task-row{grid-template-columns:1fr 1fr} }
-  .task-row label{margin-bottom:2px}
   .task-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
   .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
   .small-note{font-size:11px;color:#94a3b8}
-  .reward-row{display:grid;grid-template-columns:minmax(0,1fr) 120px minmax(220px,1fr);gap:8px;align-items:end}
-  @media(max-width:920px){ .reward-row{grid-template-columns:1fr 1fr} }
-  .reward-row > div:last-child{display:flex;gap:6px;flex-wrap:wrap}
-  fieldset[data-span="full"]{grid-column:1 / -1}
-
-  /* Confetti canvas overlay */
-  .confetti-layer{position:fixed;inset:0;pointer-events:none;z-index:9999}
+  .days-wrap{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0 0}
+  .days-wrap .chip{padding:6px 10px;font-size:12px}
+  .days-wrap .chip.active{ background:linear-gradient(180deg,#0d1b2a,#0b1222); border-color:#3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,.2); }
 </style>
 </head>
 <body>
@@ -116,7 +160,22 @@
   <div id="app">
     <div class="topbar nav">
       <div class="brand">
-        <div class="logo xp-badge" aria-hidden="true"></div>
+        <!-- Level crest with circular progress -->
+        <div class="crest" aria-hidden="true">
+          <svg viewBox="0 0 44 44">
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="var(--ringGrad2)"/>
+                <stop offset="100%" stop-color="var(--ringGrad1)"/>
+              </linearGradient>
+            </defs>
+            <circle cx="22" cy="22" r="18" fill="#0b1222" stroke="var(--ringTrack)" stroke-width="4"></circle>
+            <circle id="lvl-ring" cx="22" cy="22" r="18" fill="none" stroke="url(#ringGrad)" stroke-width="4"
+              stroke-linecap="round" stroke-dasharray="113.097" stroke-dashoffset="113.097"
+              transform="rotate(-90 22 22)"></circle>
+          </svg>
+          <div class="lvl" id="crest-level">1</div>
+        </div>
         <div class="brand-text">
           <div class="title">Rafe’s Quest Board</div>
           <div class="subtitle">Earn XP. Hit goals. Pick rewards.</div>
@@ -159,7 +218,6 @@
   </div>
 </div>
 
-<!-- Confetti canvas -->
 <canvas id="confetti" class="confetti-layer" aria-hidden="true"></canvas>
 
 <!-- Settings dialog -->
@@ -184,17 +242,17 @@
           <label>On-time bonus XP
             <input id="cfg-onTimeXp" type="number" min="0" step="1">
           </label>
-          <p class="note">Changing level step doesn’t change stored XP; it only changes how quickly levels rise.</p>
         </fieldset>
 
-        <fieldset>
-          <legend>Schedule</legend>
-          <label>School nights (1=Mon … 7=Sun)
-            <input id="cfg-schoolNights" type="text" placeholder="e.g., 1,2,3,4,5">
-          </label>
-          <label>Pack nights (for swim bag) (1=Mon … 7=Sun)
-            <input id="cfg-packNights" type="text" placeholder="e.g., 1,4,5">
-          </label>
+        <fieldset id="tasks-fieldset" data-span="full">
+          <legend>Tasks</legend>
+          <div class="note" style="margin-bottom:8px">
+            Each task shows on the weekdays you select below. “On-time bonus” is special and cannot be removed or have its ID changed.
+          </div>
+          <div id="tasks-manager" style="display:flex;flex-direction:column;gap:10px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <button class="chip" type="button" id="task-add">Add Task</button>
+          </div>
         </fieldset>
 
         <fieldset id="rewards-fieldset" data-span="full">
@@ -202,53 +260,6 @@
           <div id="rewards-manager" style="display:flex;flex-direction:column;gap:8px"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
             <button class="chip" type="button" id="reward-add">Add Reward</button>
-          </div>
-          <p class="note">Each reward can optionally require a minimum level.</p>
-        </fieldset>
-      </div>
-
-      <div>
-        <fieldset>
-          <legend>Weekly goals & bonuses</legend>
-          <label>Music: goal
-            <input id="cfg-music-goal" type="number" min="0" step="1">
-          </label>
-          <label>Music: bonus at
-            <input id="cfg-music-bonusAt" type="number" min="0" step="1">
-          </label>
-          <label>Music: bonus XP
-            <input id="cfg-music-bonusXp" type="number" min="0" step="1">
-          </label>
-          <hr style="border-color:#1f2937">
-          <label>Spanish: goal
-            <input id="cfg-spanish-goal" type="number" min="0" step="1">
-          </label>
-          <label>Spanish: bonus at
-            <input id="cfg-spanish-bonusAt" type="number" min="0" step="1">
-          </label>
-          <label>Spanish: bonus XP
-            <input id="cfg-spanish-bonusXp" type="number" min="0" step="1">
-          </label>
-          <hr style="border-color:#1f2937">
-          <label>Workout: goal
-            <input id="cfg-workout-goal" type="number" min="0" step="1">
-          </label>
-          <label>Workout: bonus at
-            <input id="cfg-workout-bonusAt" type="number" min="0" step="1">
-          </label>
-          <label>Workout: bonus XP
-            <input id="cfg-workout-bonusXp" type="number" min="0" step="1">
-          </label>
-        </fieldset>
-
-        <fieldset id="tasks-fieldset" data-span="full">
-          <legend>Tasks</legend>
-          <div class="note" style="margin-bottom:8px">
-            Add, remove, or reorder tasks. “On-time bonus” is special and cannot be removed or have its ID changed.
-          </div>
-          <div id="tasks-manager" style="display:flex;flex-direction:column;gap:10px"></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-            <button class="chip" type="button" id="task-add">Add Task</button>
           </div>
         </fieldset>
 
@@ -262,7 +273,6 @@
             <input type="checkbox" id="cfg-sound">
             Sound on level-up
           </label>
-          <p class="note">Sound uses a tiny synthesized chime (no external files). Respectful of device volume/mute.</p>
         </fieldset>
 
         <fieldset>
@@ -273,10 +283,8 @@
           <label>Recovery hint (optional)
             <input id="cfg-pinHint" type="text" placeholder="E.g., Last 4 of grandma’s phone">
           </label>
-          <p class="note">If you forget the PIN, the hint displays when a wrong PIN is entered.</p>
         </fieldset>
 
-        <!-- New: Manual XP Adjustment -->
         <fieldset>
           <legend>Manual XP Adjustment</legend>
           <div class="inline" style="gap:10px; align-items:flex-end">
@@ -294,7 +302,6 @@
             </div>
             <button class="chip" type="button" id="cfg-apply-level">Set Level</button>
           </div>
-          <p class="note">Adjust XP changes both total and Week XP and can trigger level-ups. “Set Level” only changes the level number.</p>
         </fieldset>
       </div>
     </div>
@@ -306,41 +313,37 @@
 
 <script>
 (function(){
-  // Polyfill structuredClone for older browsers
   if (typeof window.structuredClone !== "function") {
     window.structuredClone = obj => JSON.parse(JSON.stringify(obj));
   }
 
   const CHILD_ID = "rafe";
   const DEFAULT_PIN = "7497";
+  const ALL_DAYS = [1,2,3,4,5,6,7];
 
   const DEFAULTS = {
     LEVEL_STEP: 120,
-    SCHOOL_NIGHTS: [1,2,3,4,5],
-    PACK_NIGHTS: [1,4,5],
     onTimeXp: 10,
     celebrate: { confetti: true, sound: false },
     parentPin: DEFAULT_PIN,
     pinHint: "",
     tasks: [
-      { id:"workout", icon:"🏊‍♂️", label:"Swimmer Workout", xp:10,
+      { id:"workout", icon:"🏊‍♂️", label:"Swimmer Workout", xp:10, days:[1,2,3,4,5],
         weekly:{ key:"workout", goal:3, bonusAt:4, bonusXp:10 } },
-      { id:"homework1", icon:"✏️", label:"Homework Block 1 (25 min)", xp:8 },
-      { id:"homework2", icon:"⏱️", label:"Homework Block 2 (optional)", xp:4 },
-      { id:"music", icon:"🎵", label:"Music practice (15 min)", xp:8,
+      { id:"homework1", icon:"✏️", label:"Homework Block 1 (25 min)", xp:8, days:[1,2,3,4,5] },
+      { id:"homework2", icon:"⏱️", label:"Homework Block 2 (optional)", xp:4, days:[1,2,3,4,5] },
+      { id:"music", icon:"🎵", label:"Music practice (15 min)", xp:8, days:[1,2,3,4,5],
         weekly:{ key:"music", goal:4, bonusAt:5, bonusXp:10 } },
-      { id:"spanish", icon:"💬", label:"Spanish — complete a lesson", xp:10,
+      { id:"spanish", icon:"💬", label:"Spanish — complete a lesson", xp:10, days:[1,2,3,4,5],
         weekly:{ key:"spanish", goal:3, bonusAt:4, bonusXp:10 } },
-      { id:"lunch", icon:"🥪", label:"Pack lunch + water", xp:8,
-        showIf: ctx => ctx.SCHOOL_NIGHTS.includes(ctx.dow),
+      { id:"lunch", icon:"🥪", label:"Pack lunch + water", xp:8, days:[1,2,3,4,5],
         weekly:{ key:"lunch", goal:5 } },
-      { id:"backpack", icon:"🎒", label:"Backpack reset", xp:4 },
-      { id:"swim", icon:"🏊", label:"Pack swim bag", xp:8,
-        showIf: ctx => ctx.PACK_NIGHTS.includes(ctx.dow),
+      { id:"backpack", icon:"🎒", label:"Backpack reset", xp:4, days:[1,2,3,4,5,6,7] },
+      { id:"swim", icon:"🏊", label:"Pack swim bag", xp:8, days:[4,5,7],
         weekly:{ key:"swim", goalFrom:"swimRequired" } },
-      { id:"dishes", icon:"🍽️", label:"Wash and put away dishes", xp:10 },
-      { id:"hygiene", icon:"🛁", label:"Shower + teeth", xp:4 },
-      { id:"clothes", icon:"👕", label:"Clothes out for tomorrow", xp:4 },
+      { id:"dishes", icon:"🍽️", label:"Wash and put away dishes", xp:10, days:[1,2,3,4,5,6,7] },
+      { id:"hygiene", icon:"🛁", label:"Shower + teeth", xp:4, days:[1,2,3,4,5,6,7] },
+      { id:"clothes", icon:"👕", label:"Clothes out for tomorrow", xp:4, days:[1,2,3,4,5,6,7] },
       { id:"ontime", icon:"⭐", label:"On-time bonus", xp:10, special:"ontime" }
     ],
     rewards: [
@@ -358,7 +361,7 @@
   const now = () => new Date();
   const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
 
-  const CFG_KEY = `xp-config-v3-${CHILD_ID}`;
+  const CFG_KEY = `xp-config-v4-simplified-${CHILD_ID}`;
   function deepMerge(base, over){
     if (Array.isArray(base)) return Array.isArray(over) ? over.slice() : base.slice();
     if (base && typeof base==="object" && over && typeof over==="object"){
@@ -372,15 +375,15 @@
   function saveCfg(){ localStorage.setItem(CFG_KEY, JSON.stringify(CONFIG)); }
 
   let CONFIG = deepMerge(DEFAULTS, loadCfg());
+  migrateToDaysIfNeeded(CONFIG);
+  saveCfg();
 
   const getLevelStep = () => Math.max(1, Number(CONFIG.LEVEL_STEP||DEFAULTS.LEVEL_STEP));
-  const getSchoolNights = () => Array.isArray(CONFIG.SCHOOL_NIGHTS) ? CONFIG.SCHOOL_NIGHTS : DEFAULTS.SCHOOL_NIGHTS;
-  const getPackNights = () => Array.isArray(CONFIG.PACK_NIGHTS) ? CONFIG.PACK_NIGHTS : DEFAULTS.PACK_NIGHTS;
   const getOnTimeXp = () => Math.max(0, Number(CONFIG.onTimeXp ?? DEFAULTS.onTimeXp));
   const getTasks = () => CONFIG.tasks;
   const getRewards = () => CONFIG.rewards;
 
-  const KEY = `xp-tracker-v7-${CHILD_ID}`;
+  const KEY = `xp-tracker-v8-simplified-${CHILD_ID}`;
   let state = null;
   try { state = JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ state = null; }
   if(!state){
@@ -416,6 +419,12 @@
   const taskList = $("#task-list");
   const weeklyGoalsWrap = $("#weekly-goals");
   const rewardsWrap = $("#rewards");
+  const crestLevel = document.getElementById("crest-level");
+  const crestRing = document.getElementById("lvl-ring");
+  const levelSpan = document.getElementById("level");
+  const xpSpan = document.getElementById("xp");
+  const weekXpSpan = document.getElementById("week-xp");
+  const levelProgress = document.getElementById("level-progress");
 
   $("#reset-week").addEventListener("click", ()=>{
     const pin = prompt("Enter parent PIN to start a new week:");
@@ -459,15 +468,12 @@
     if(showAlert) alert("New week started. Weekly counters reset.");
   }
 
-  // PATCH: safer context + robust filtering
   function tasksForTonight(){
-    const schools = Array.isArray(getSchoolNights()) ? getSchoolNights() : [];
-    const packs = Array.isArray(getPackNights()) ? getPackNights() : [];
-    const ctx = { dow: isoDow(now()), SCHOOL_NIGHTS: schools, PACK_NIGHTS: packs };
+    const dow = isoDow(now());
     return getTasks().filter(t => {
       if(t.special === "ontime") return false;
-      if(!t.showIf) return true;
-      try { return !!t.showIf(ctx); } catch { return true; }
+      const days = Array.isArray(t.days) ? t.days : ALL_DAYS;
+      return days.includes(dow);
     });
   }
 
@@ -486,10 +492,13 @@
     const ch = state.child;
     ch.xp = Math.max(0, (ch.xp||0) + delta);
     ch.weekXp = Math.max(0, (ch.weekXp||0) + delta);
+    // XP pulse
+    xpSpan.classList.remove("pulse");
+    void xpSpan.offsetWidth;
+    xpSpan.classList.add("pulse");
     levelCheck();
   }
 
-  // Celebration controls
   function pinWrongMsg(){
     const hint = CONFIG.pinHint ? `\nHint: ${CONFIG.pinHint}` : "";
     return `Incorrect PIN.${hint}`;
@@ -514,13 +523,10 @@
     setTimeout(()=>{ alert(`${name} leveled up to Level ${state.child.level}! Choose a reward.`); }, 50);
   }
 
-  // Confetti (tiny, dependency-free)
+  // Confetti
   const confettiCanvas = document.getElementById("confetti");
   let confettiCtx = confettiCanvas.getContext("2d");
-  function resizeConfetti(){
-    confettiCanvas.width = window.innerWidth;
-    confettiCanvas.height = window.innerHeight;
-  }
+  function resizeConfetti(){ confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
   window.addEventListener("resize", resizeConfetti, {passive:true});
   resizeConfetti();
 
@@ -541,13 +547,9 @@
       const elapsed = t - start;
       confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
       parts.forEach(p=>{
-        p.y += p.v;
-        p.r += p.vr;
-        confettiCtx.save();
-        confettiCtx.translate(p.x, p.y);
-        confettiCtx.rotate(p.r);
-        confettiCtx.fillStyle = p.c;
-        confettiCtx.fillRect(-p.s/2, -p.s/2, p.s, p.s);
+        p.y += p.v; p.r += p.vr;
+        confettiCtx.save(); confettiCtx.translate(p.x, p.y); confettiCtx.rotate(p.r);
+        confettiCtx.fillStyle = p.c; confettiCtx.fillRect(-p.s/2, -p.s/2, p.s, p.s);
         confettiCtx.restore();
       });
       if (elapsed < duration) requestAnimationFrame(tick);
@@ -556,35 +558,29 @@
     requestAnimationFrame(tick);
   }
 
-  // Simple chime via Web Audio
+  // Audio
   let audioCtx = null;
   function playChime(){
     try{
       if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-      const now = audioCtx.currentTime;
+      const t0 = audioCtx.currentTime;
       const o1 = audioCtx.createOscillator();
       const g1 = audioCtx.createGain();
       o1.type = "triangle";
-      o1.frequency.setValueAtTime(880, now);       // A5
-      o1.frequency.exponentialRampToValueAtTime(1320, now+0.18); // up-gliss
-      g1.gain.setValueAtTime(0.001, now);
-      g1.gain.exponentialRampToValueAtTime(0.2, now+0.02);
-      g1.gain.exponentialRampToValueAtTime(0.0001, now+0.5);
+      o1.frequency.setValueAtTime(880, t0);
+      o1.frequency.exponentialRampToValueAtTime(1320, t0+0.18);
+      g1.gain.setValueAtTime(0.001, t0);
+      g1.gain.exponentialRampToValueAtTime(0.2, t0+0.02);
+      g1.gain.exponentialRampToValueAtTime(0.0001, t0+0.5);
       o1.connect(g1).connect(audioCtx.destination);
-      o1.start(now);
-      o1.stop(now+0.5);
-    }catch(e){ /* ignore if blocked */ }
+      o1.start(t0); o1.stop(t0+0.5);
+    }catch(e){}
   }
 
   function requiredSwimPacksThisWeek(){
-    const start = new Date(state.weekStart);
-    let count=0;
-    for(let i=0;i<7;i++){
-      const day = new Date(start); day.setDate(start.getDate()+i);
-      const dow = isoDow(day);
-      if(getPackNights().includes(dow)) count++;
-    }
-    return count;
+    const t = getTasks().find(x=>x.id==="swim");
+    const days = Array.isArray(t?.days) ? t.days.length : 0;
+    return days;
   }
 
   function updateWeekly(task, nowDone){
@@ -646,6 +642,22 @@
     save(); render();
   }
 
+  function updateCrestAndProgress(){
+    const ch = state.child;
+    const step = getLevelStep();
+    const pct = ((ch.xp % step) / step);
+    // crest ring stroke offset
+    const circumference = 2*Math.PI*18; // r=18
+    crestRing.setAttribute("stroke-dasharray", String(circumference.toFixed(3)));
+    crestRing.setAttribute("stroke-dashoffset", String((circumference*(1-pct)).toFixed(3)));
+    // text
+    crestLevel.textContent = String(ch.level);
+    levelSpan.textContent = String(ch.level);
+    xpSpan.textContent = String(ch.xp);
+    weekXpSpan.textContent = String(ch.weekXp || 0);
+    levelProgress.style.width = `${isFinite(pct)?(pct*100):0}%`;
+  }
+
   function render(){
     ensureToday();
     const d = now();
@@ -671,15 +683,11 @@
       taskList.appendChild(row);
     });
 
-    const ch = state.child;
-    const step = getLevelStep();
-    document.getElementById("level").textContent = String(ch.level);
-    document.getElementById("xp").textContent = String(ch.xp);
-    document.getElementById("week-xp").textContent = String(ch.weekXp || 0);
-    const pct = ((ch.xp % step) / step) * 100;
-    document.getElementById("level-progress").style.width = `${isFinite(pct)?pct:0}%`;
+    // Numbers + visuals
+    updateCrestAndProgress();
 
-    const w = ch.weekly;
+    // Weekly goals
+    const w = state.child.weekly;
     w.swimRequired = requiredSwimPacksThisWeek();
     weeklyGoalsWrap.innerHTML = "";
     getTasks().filter(t=>t.weekly).forEach(t=>{
@@ -689,11 +697,9 @@
       const label = t.id==="workout" ? "Swimmer Workouts" :
                     t.id==="music" ? "Music sessions" :
                     t.id==="spanish" ? "Spanish lessons" :
-                    t.id==="lunch" ? "Lunch packed (school nights)" :
-                    t.id==="swim" ? "Swim bag packed (required nights)" : t.label;
-      const sub = t.id==="lunch" ? "Mon–Fri" :
-                  t.id==="swim" ? "Auto-calculated" :
-                  t.weekly && t.weekly.bonusAt ? `Goal ${goal || t.weekly.goal} / week — extra bonus for ${t.weekly.bonusAt}+` :
+                    t.id==="lunch" ? "Lunch packed" :
+                    t.id==="swim" ? "Swim bag packed (selected nights)" : t.label;
+      const sub = t.weekly && t.weekly.bonusAt ? `Goal ${goal || t.weekly.goal} / week — extra bonus for ${t.weekly.bonusAt}+` :
                   goal ? `Goal ${goal} / week` : "";
 
       const row = document.createElement("div");
@@ -711,8 +717,9 @@
       weeklyGoalsWrap.appendChild(row);
     });
 
+    // Rewards
     rewardsWrap.innerHTML = "";
-    const curLevel = ch.level;
+    const curLevel = state.child.level;
     getRewards().forEach(r=>{
       const span = document.createElement("span");
       span.className = "reward";
@@ -831,7 +838,9 @@
       f.text().then(txt=>{
         try{
           const json = JSON.parse(txt);
-          CONFIG = deepMerge(DEFAULTS, json);
+          let imported = deepMerge(DEFAULTS, json);
+          migrateToDaysIfNeeded(imported);
+          CONFIG = imported;
           saveCfg();
           populateSettings();
           render();
@@ -855,11 +864,9 @@
     dlg.close();
   });
 
-  // New: manual adjustment handlers
   document.getElementById("cfg-apply-delta").addEventListener("click", ()=>{
     const val = Number(document.getElementById("cfg-xp-delta").value);
     if(!Number.isFinite(val) || val===0){ alert("Enter a non-zero XP amount (e.g., 25 or -10)."); return; }
-    const before = { xp: state.child.xp, weekXp: state.child.weekXp };
     applyXp(val);
     state.adjustments.push({ t: Date.now(), delta: val });
     save(); render();
@@ -886,17 +893,31 @@
     while(used.has(`${base}${n}`)) n++;
     return `${base}${n}`;
   }
-  function showIfPresetToFn(preset){
-    if(preset==="school") return (ctx)=>ctx.SCHOOL_NIGHTS.includes(ctx.dow);
-    if(preset==="pack") return (ctx)=>ctx.PACK_NIGHTS.includes(ctx.dow);
-    return undefined;
-  }
-  function fnToShowIfPreset(fn){
-    if(!fn) return "always";
-    const s = String(fn);
-    if (s.includes("SCHOOL_NIGHTS") && s.includes("includes")) return "school";
-    if (s.includes("PACK_NIGHTS") && s.includes("includes")) return "pack";
-    return "custom";
+
+  function migrateToDaysIfNeeded(cfg){
+    if(!Array.isArray(cfg.tasks)) return;
+    const legacyPack = Array.isArray(cfg.PACK_NIGHTS) ? cfg.PACK_NIGHTS.slice().sort((a,b)=>a-b) : null;
+    cfg.tasks.forEach(t=>{
+      if(Array.isArray(t.days) && t.days.length){ return; }
+      let preset = null;
+      if (t.showIf){
+        const s = String(t.showIf);
+        if (s.includes("SCHOOL_NIGHTS") && s.includes("includes")) preset = "school";
+        else if (s.includes("PACK_NIGHTS") && s.includes("includes")) preset = "pack";
+        else preset = "always";
+      } else {
+        preset = "always";
+      }
+      if(preset==="school") t.days = [1,2,3,4,5];
+      else if(preset==="pack"){
+        t.days = (legacyPack && legacyPack.length) ? legacyPack : [4,5,7];
+      } else {
+        t.days = ALL_DAYS.slice();
+      }
+      delete t.showIf;
+    });
+    delete cfg.SCHOOL_NIGHTS;
+    delete cfg.PACK_NIGHTS;
   }
 
   function renderRewardsManager(){
@@ -952,14 +973,14 @@
     const wrap = document.getElementById("tasks-manager");
     wrap.innerHTML = "";
     CONFIG.tasks.forEach((t, idx)=>{
-      const preset = fnToShowIfPreset(t.showIf);
-      // PATCH: keep swim/lunch aligned with schedule presets when undefined/always/custom
-      const effectivePreset =
-        t.id === "swim"  ? ((preset === "always" || preset === "custom") ? "pack"   : preset) :
-        t.id === "lunch" ? ((preset === "always" || preset === "custom") ? "school" : preset) :
-        preset;
-
       const isOnTime = t.special === "ontime";
+      if(!Array.isArray(t.days) || !t.days.length) t.days = ALL_DAYS.slice();
+
+      const dayChip = (n, lbl) => {
+        const on = t.days.includes(n);
+        return `<button type="button" class="chip small ${on?"active":""}" data-day="${n}">${lbl}</button>`;
+      };
+
       const card = document.createElement("div");
       card.className = "task-card";
       card.dataset.index = idx;
@@ -979,13 +1000,17 @@
             <input type="number" min="0" step="1" value="${t.xp||0}" data-f="xp">
           </div>
           <div>
-            <label>Show on nights</label>
-            <select data-f="showIfPreset">
-              <option value="always" ${effectivePreset==="always"?"selected":""}>Always</option>
-              <option value="school" ${effectivePreset==="school"?"selected":""}>School nights</option>
-              <option value="pack" ${effectivePreset==="pack"?"selected":""}>Pack nights</option>
-              <option value="custom" ${effectivePreset==="custom"?"selected":""} disabled>Custom</option>
-            </select>
+            <label>Show on days</label>
+            <div class="days-wrap" aria-label="Choose days">
+              ${dayChip(1,"Mon")}
+              ${dayChip(2,"Tue")}
+              ${dayChip(3,"Wed")}
+              ${dayChip(4,"Thu")}
+              ${dayChip(5,"Fri")}
+              ${dayChip(6,"Sat")}
+              ${dayChip(7,"Sun")}
+            </div>
+            <div class="small-note">A task appears only on the selected days.</div>
           </div>
         </div>
 
@@ -1030,9 +1055,24 @@
         </div>
       `;
 
+      // Field listeners
       card.querySelectorAll("[data-f]").forEach(inp=>{
         inp.addEventListener("input", ()=> applyTaskEdit(idx));
       });
+
+      // Day chip toggles
+      card.querySelectorAll("[data-day]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const n = Number(btn.getAttribute("data-day"));
+          const i = t.days.indexOf(n);
+          if(i>=0) t.days.splice(i,1); else t.days.push(n);
+          t.days = t.days.filter((x,i,a)=>a.indexOf(x)===i).sort((a,b)=>a-b);
+          saveCfg();
+          renderTasksManager();
+        });
+      });
+
+      // Card actions (move/dup/del)
       card.querySelectorAll("[data-act]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const act = btn.getAttribute("data-act");
@@ -1077,73 +1117,46 @@
       }
     }
 
-    const chosen = get("showIfPreset").value;
-    // PATCH: keep swim/lunch on their intended preset if "always" was chosen
-    const finalPreset =
-      t.id === "swim"  && chosen === "always" ? "pack"   :
-      t.id === "lunch" && chosen === "always" ? "school" :
-      chosen;
-    t.showIf = showIfPresetToFn(finalPreset);
-
-    const weeklyOn = get("weeklyOn").checked;
+    const weeklyOn = card.querySelector('[data-f="weeklyOn"]').checked;
     if(weeklyOn){
       t.weekly = t.weekly || { key: t.id };
-      t.weekly.key = get("weeklyKey").value.trim() || t.id;
-      const g = get("weeklyGoal").value;
-      const ba = get("weeklyBonusAt").value;
-      const bx = get("weeklyBonusXp").value;
+      t.weekly.key = card.querySelector('[data-f="weeklyKey"]').value.trim() || t.id;
+      const g = card.querySelector('[data-f="weeklyGoal"]').value;
+      const ba = card.querySelector('[data-f="weeklyBonusAt"]').value;
+      const bx = card.querySelector('[data-f="weeklyBonusXp"]').value;
       t.weekly.goal = g==="" ? undefined : Math.max(0, Number(g)||0);
       t.weekly.bonusAt = ba==="" ? undefined : Math.max(0, Number(ba)||0);
       t.weekly.bonusXp = bx==="" ? undefined : Math.max(0, Number(bx)||0);
-      t.weekly.goalFrom = get("weeklyGoalFromSwim").checked ? "swimRequired" : undefined;
+      t.weekly.goalFrom = card.querySelector('[data-f="weeklyGoalFromSwim"]').checked ? "swimRequired" : undefined;
     } else {
       delete t.weekly;
     }
+
+    saveCfg();
+    renderTasksManager();
   }
 
   function populateSettings(){
     document.getElementById("cfg-levelStep").value = getLevelStep();
     document.getElementById("cfg-onTimeXp").value = getOnTimeXp();
-    document.getElementById("cfg-schoolNights").value = getSchoolNights().join(",");
-    document.getElementById("cfg-packNights").value = getPackNights().join(",");
-
-    // celebration
     document.getElementById("cfg-confetti").checked = !!CONFIG.celebrate?.confetti;
     document.getElementById("cfg-sound").checked = !!CONFIG.celebrate?.sound;
-
-    // parent pin fields are blank by default
     document.getElementById("cfg-newPin").value = "";
     document.getElementById("cfg-pinHint").value = CONFIG.pinHint || "";
-
-    // clear manual fields
     document.getElementById("cfg-xp-delta").value = "";
     document.getElementById("cfg-set-level").value = "";
-
     renderTasksManager();
     renderRewardsManager();
-  }
-
-  // PATCH: more forgiving schedule parsing
-  function parseIntList(s){
-    return String(s||"")
-      .split(/[,\s]+/)
-      .map(x => parseInt(String(x).trim(), 10))
-      .filter(n => Number.isInteger(n) && n>=1 && n<=7)
-      .sort((a,b)=>a-b);
   }
 
   function saveSettingsFromForm(){
     CONFIG.LEVEL_STEP = Math.max(1, Number(document.getElementById("cfg-levelStep").value||DEFAULTS.LEVEL_STEP));
     CONFIG.onTimeXp = Math.max(0, Number(document.getElementById("cfg-onTimeXp").value||DEFAULTS.onTimeXp));
-    CONFIG.SCHOOL_NIGHTS = parseIntList(document.getElementById("cfg-schoolNights").value);
-    CONFIG.PACK_NIGHTS = parseIntList(document.getElementById("cfg-packNights").value);
 
-    // celebration toggles
     CONFIG.celebrate = CONFIG.celebrate || {};
     CONFIG.celebrate.confetti = document.getElementById("cfg-confetti").checked;
     CONFIG.celebrate.sound = document.getElementById("cfg-sound").checked;
 
-    // parent pin updates
     const newPin = (document.getElementById("cfg-newPin").value || "").trim();
     if(newPin){
       if(!/^\d{4,10}$/.test(newPin)) { alert("PIN should be 4–10 digits."); return; }
