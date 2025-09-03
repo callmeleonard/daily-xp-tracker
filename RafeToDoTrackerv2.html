@@ -39,25 +39,16 @@
     --ringTrack:#1f2937;
   }
 
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; transition: background-color .35s ease, color .25s ease}
-
-  /* Starfield layer (night only via data-theme) */
-  #starfield{
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background:
-      radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.12), transparent 60%),
-      radial-gradient(1.5px 1.5px at 70% 80%, rgba(255,255,255,.09), transparent 60%),
-      radial-gradient(1.2px 1.2px at 40% 70%, rgba(255,255,255,.08), transparent 60%),
-      radial-gradient(1.3px 1.3px at 80% 25%, rgba(255,255,255,.10), transparent 60%),
-      radial-gradient(1.2px 1.2px at 30% 85%, rgba(255,255,255,.08), transparent 60%);
-    animation: drift 80s linear infinite;
-    opacity:.45;
-    display:none;
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+    transition: background-color .35s ease, color .25s ease;
+    height:100%; min-height:100%;
+    overflow-x:hidden; overscroll-behavior-y:none;
   }
-  html[data-theme="night"] #starfield{ display:block; }
-  @keyframes drift{ from{ transform:translateY(0) } to{ transform:translateY(-140px) } }
 
-  .wrap{max-width:960px;margin:0 auto;padding:16px;position:relative;z-index:1}
+  .wrap{max-width:960px;margin:0 auto;padding:16px;position:relative;min-height:100svh}
   .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
   @media(min-width:700px){ .grid{grid-template-columns:1fr 1fr} }
 
@@ -152,12 +143,6 @@
     cursor: default; user-select:none;
   }
   html[data-theme="day"] .reward{ background:linear-gradient(180deg,#f9fbff,#f1f5ff); }
-  .reward[data-minlevel="1"]{ box-shadow: inset 0 0 0 1px rgba(59,130,246,.35); }
-  .reward[data-minlevel="2"]{ box-shadow: inset 0 0 0 1px rgba(99,102,241,.35); }
-  .reward[data-minlevel="3"]{ box-shadow: inset 0 0 0 1px rgba(34,197,94,.35); }
-  .reward[data-minlevel="4"]{ box-shadow: inset 0 0 0 1px rgba(234,179,8,.35); }
-  .reward[data-minlevel="5"]{ box-shadow: inset 0 0 0 1px rgba(244,63,94,.35); }
-
   .reward.available{ border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,.18), inset 0 0 0 1px rgba(34,197,94,.35); cursor: pointer; }
   .reward.locked{ opacity:.55 }
   .reward .reason{ font-size:11px; color:var(--muted); }
@@ -167,11 +152,12 @@
   @media print{
     body{background:#fff;color:#000}
     .wrap{max-width:100%;padding:0}
-    #starfield, .card::after, .crest svg, .crest .lvl, .nav{display:none !important}
+    .card::after, .crest svg, .crest .lvl, .nav{display:none !important}
     .card, .row, button, .chip{box-shadow:none}
     .row, .chip, .pill{border-color:#000}
   }
 
+  /* Dialogs */
   dialog{border:none;border-radius:12px;padding:0;background:var(--card);color:var(--text);box-shadow:var(--card-shadow);width:min(960px,96vw)}
   dialog::backdrop{background:rgba(0,0,0,.5)}
   .dlg-head{padding:12px 14px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
@@ -209,11 +195,12 @@
   .reward-card .meta{ font-size:12px; color:var(--muted); }
   .reward-card.locked{ opacity:.6 }
   .reward-card .pick{ white-space:nowrap }
+
+  /* Lock body scroll when modal open (mobile fix) */
+  body.modal-open{ overflow:hidden; position:relative; height:100%; }
 </style>
 </head>
 <body>
-<div id="starfield" aria-hidden="true"></div>
-
 <div class="wrap">
   <div id="app">
     <div class="topbar nav">
@@ -279,7 +266,7 @@
   </div>
 </div>
 
-<canvas id="confetti" class="confetti-layer" aria-hidden="true"></canvas>
+<canvas id="confetti" class="confetti-layer" aria-hidden="true" style="position:fixed; inset:0; pointer-events:none;"></canvas>
 
 <!-- Parent Settings -->
 <dialog id="settingsDlg">
@@ -344,7 +331,7 @@
             <label>Nightfall starts</label>
             <input id="cfg-night-start" type="time" value="19:00" style="width:130px">
           </div>
-          <p class="note">Auto uses your local time. Starfield shows only at Night.</p>
+          <p class="note">Auto uses your local time.</p>
         </fieldset>
 
         <fieldset>
@@ -459,7 +446,7 @@
   const now = () => new Date();
   const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
 
-  const CFG_KEY = `xp-config-v6-rfx-${CHILD_ID}`;
+  const CFG_KEY = `xp-config-nostar-${CHILD_ID}`;
   function deepMerge(base, over){
     if (Array.isArray(base)) return Array.isArray(over) ? over.slice() : base.slice();
     if (base && typeof base==="object" && over && typeof over==="object"){
@@ -472,7 +459,7 @@
   function loadCfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)||"null")||{}; }catch{ return {}; } }
   function saveCfg(){ localStorage.setItem(CFG_KEY, JSON.stringify(CONFIG)); }
 
-  // Load config and migrate rewards to new schema if needed
+  // Load config and migrate
   let CONFIG = deepMerge(DEFAULTS, loadCfg());
   migrateTasksDays(CONFIG);
   migrateRewards(CONFIG);
@@ -484,7 +471,7 @@
   const getRewards = () => CONFIG.rewards;
 
   // State
-  const KEY = `xp-tracker-v10-rfx-${CHILD_ID}`;
+  const KEY = `xp-tracker-nostar-${CHILD_ID}`;
   let state = null;
   try { state = JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ state = null; }
   if(!state){
@@ -596,17 +583,14 @@
   }
 
   function doNewWeekReset(showAlert){
-    // Clear weekly progress
     state.child.weekly = { counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 }, flags: { music:false, spanish:false, workout:false }, swimRequired: 0 };
     state.child.weekXp = 0;
     state.child.today = {};
     state.child.lastDate = null;
 
-    // Update week start first
     const newWeekStart = getWeekStart(now());
     state.weekStart = newWeekStart;
 
-    // Clear weekly reward locks tied to previous week
     for(const rid in state.rewardLocks){
       const lock = state.rewardLocks[rid];
       if(lock && lock.untilWeekStart && lock.untilWeekStart !== newWeekStart){
@@ -641,7 +625,6 @@
 
   function applyXp(delta){
     const ch = state.child;
-    const beforeLevel = ch.level;
     ch.xp = Math.max(0, (ch.xp||0) + delta);
     ch.weekXp = Math.max(0, (ch.weekXp||0) + delta);
     xpSpan.classList.remove("pulse");
@@ -652,7 +635,7 @@
       ch.unclaimedLevels += leveled;
       save();
       render();
-      openRewardPicker(); // auto-open picker
+      openRewardPicker();
     }
   }
 
@@ -666,7 +649,7 @@
     const step = getLevelStep();
     let leveled = 0;
     if(state._alertLock) return 0;
-    while(ch.xp >= ch.level * step + step){ // require next threshold: (level+1)*step
+    while(ch.xp >= ch.level * step + step){
       ch.level += 1;
       leveled += 1;
       celebrateLevelUp(ch.level);
@@ -676,10 +659,9 @@
     return leveled;
   }
 
-  function celebrateLevelUp(lvl){
+  function celebrateLevelUp(){
     if (CONFIG.celebrate?.confetti) runConfetti(900);
     if (CONFIG.celebrate?.sound) playChime();
-    setTimeout(()=>{ /* toast-like */ }, 10);
   }
 
   // Confetti
@@ -861,12 +843,13 @@
       : `No unclaimed rewards.`;
     document.getElementById("rp-close").onclick = closeRewardPicker;
     dlg.showModal();
+    document.body.classList.add("modal-open");
 
     if(ch.unclaimedLevels>0 && availableCount===0){
       alert("No rewards are currently eligible. You can claim later when one becomes available.");
     }
   }
-  function closeRewardPicker(){ document.getElementById("rewardPicker").close(); }
+  function closeRewardPicker(){ document.getElementById("rewardPicker").close(); document.body.classList.remove("modal-open"); }
 
   function updateCrestAndProgress(){
     const ch = state.child;
@@ -1050,7 +1033,7 @@
 
   // Settings dialog logic
   const dlg = document.getElementById("settingsDlg");
-  document.getElementById("cfg-close").addEventListener("click", ()=>dlg.close());
+  document.getElementById("cfg-close").addEventListener("click", ()=>{ dlg.close(); document.body.classList.remove("modal-open"); });
   document.getElementById("cfg-export").addEventListener("click", ()=>{
     const blob = new Blob([JSON.stringify(CONFIG,null,2)], {type:"application/json"});
     const a = document.createElement("a");
@@ -1096,6 +1079,7 @@
   document.getElementById("cfg-save").addEventListener("click", ()=>{
     saveSettingsFromForm();
     dlg.close();
+    document.body.classList.remove("modal-open");
   });
 
   document.getElementById("cfg-apply-delta").addEventListener("click", ()=>{
@@ -1330,12 +1314,10 @@
         </div>
       `;
 
-      // Field listeners
       card.querySelectorAll("[data-f]").forEach(inp=>{
         inp.addEventListener("input", ()=> applyTaskEdit(idx));
       });
 
-      // Day chip toggles
       card.querySelectorAll("[data-day]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const n = Number(btn.getAttribute("data-day"));
@@ -1347,7 +1329,6 @@
         });
       });
 
-      // Card actions
       card.querySelectorAll("[data-act]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const act = btn.getAttribute("data-act");
@@ -1468,6 +1449,7 @@
   function openSettings(){
     populateSettings();
     document.getElementById("settingsDlg").showModal();
+    document.body.classList.add("modal-open");
   }
 })();
 </script>
