@@ -78,7 +78,16 @@
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
   .crest{ width:44px; height:44px; position:relative; flex:0 0 auto; display:grid; place-items:center; }
   .crest svg{ width:44px; height:44px; display:block }
-  .crest .lvl{ position:absolute; font-weight:800; font-size:12px; letter-spacing:.3px; color:#bbf7d0; text-shadow:0 1px 1px rgba(0,0,0,.4) }
+  .crest .lvl{ position:absolute; font-weight:900; font-size:12px; letter-spacing:.3px; color:#bbf7d0; text-shadow:0 1px 1px rgba(0,0,0,.45); padding:0 0; border-radius:6px; }
+  /* Daylight readability improvement */
+  html[data-theme="day"] .crest .lvl{
+    color:#0b1222;
+    background: rgba(255,255,255,.9);
+    padding:2px 6px;
+    text-shadow: none;
+    box-shadow: 0 1px 0 rgba(0,0,0,.06);
+  }
+
   .brand-text{display:flex;flex-direction:column;min-width:0}
   .title{font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .subtitle{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -134,14 +143,26 @@
   @keyframes xpPulse{ 0%{transform:scale(1); color:#16a34a} 50%{transform:scale(1.12); color:#22c55e} 100%{transform:scale(1); color:#16a34a} }
 
   .pill{padding:4px 8px;border-radius:999px;background:color-mix(in oklab, var(--surface), #000 0%);border:1px solid var(--card-border);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* Rewards gallery */
   .rewards{display:flex;flex-wrap:wrap;gap:8px}
-  .reward{ display:inline-flex;gap:8px;align-items:center;margin:4px 0;padding:6px 10px;border-radius:999px;border:1px solid var(--card-border); background: linear-gradient(180deg, color-mix(in oklab, var(--surface), #000 0%), color-mix(in oklab, var(--surface), #000 6%)); }
+  .reward{
+    display:inline-flex;gap:8px;align-items:center;margin:4px 0;padding:6px 10px;border-radius:999px;border:1px solid var(--card-border);
+    background: linear-gradient(180deg, color-mix(in oklab, var(--surface), #000 0%), color-mix(in oklab, var(--surface), #000 6%));
+    cursor: default; user-select:none;
+  }
   html[data-theme="day"] .reward{ background:linear-gradient(180deg,#f9fbff,#f1f5ff); }
   .reward[data-minlevel="1"]{ box-shadow: inset 0 0 0 1px rgba(59,130,246,.35); }
   .reward[data-minlevel="2"]{ box-shadow: inset 0 0 0 1px rgba(99,102,241,.35); }
   .reward[data-minlevel="3"]{ box-shadow: inset 0 0 0 1px rgba(34,197,94,.35); }
   .reward[data-minlevel="4"]{ box-shadow: inset 0 0 0 1px rgba(234,179,8,.35); }
   .reward[data-minlevel="5"]{ box-shadow: inset 0 0 0 1px rgba(244,63,94,.35); }
+
+  .reward.available{ border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,.18), inset 0 0 0 1px rgba(34,197,94,.35); cursor: pointer; }
+  .reward.locked{ opacity:.55 }
+  .reward .reason{ font-size:11px; color:var(--muted); }
+
+  .recent-reward{ font-size:12px; color:#a5b4fc; }
 
   @media print{
     body{background:#fff;color:#000}
@@ -175,6 +196,19 @@
   .days-wrap .chip{padding:6px 10px;font-size:12px}
   .days-wrap .chip.active{ background:linear-gradient(180deg,#0d1b2a,#0b1222); border-color:#3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,.2); }
   html[data-theme="day"] .days-wrap .chip.active{ background:linear-gradient(180deg,#e6f0ff,#f0f6ff); }
+
+  /* Reward picker modal */
+  #rewardPicker .grid{
+    display:grid; grid-template-columns:1fr; gap:10px;
+  }
+  @media(min-width:650px){ #rewardPicker .grid{ grid-template-columns:1fr 1fr; } }
+  .reward-card{
+    border:1px solid var(--card-border); border-radius:12px; padding:10px; background:var(--surface);
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+  }
+  .reward-card .meta{ font-size:12px; color:var(--muted); }
+  .reward-card.locked{ opacity:.6 }
+  .reward-card .pick{ white-space:nowrap }
 </style>
 </head>
 <body>
@@ -227,7 +261,10 @@
           <div class="progress" title="Level progress">
             <div id="level-progress"></div>
           </div>
-          <div class="sub">Level <span id="level">1</span> · <span id="xp">0</span> XP · Week <span id="week-xp">0</span> XP</div>
+          <div class="sub">Level <span id="level">1</span> · <span id="xp">0</span> XP · Week <span id="week-xp">0</span> XP
+            <span id="recent-reward" class="recent-reward"></span>
+            <button id="choose-reward" class="chip" style="display:none">Choose reward</button>
+          </div>
         </div>
       </div>
 
@@ -244,6 +281,7 @@
 
 <canvas id="confetti" class="confetti-layer" aria-hidden="true"></canvas>
 
+<!-- Parent Settings -->
 <dialog id="settingsDlg">
   <div class="dlg-head">
     <div class="dlg-title">Parent Settings</div>
@@ -284,6 +322,7 @@
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
             <button class="chip" type="button" id="reward-add">Add Reward</button>
           </div>
+          <p class="note">Weekly lockout prevents picking the same reward more than once per week. Level cooldown makes a reward available again only after gaining N more levels.</p>
         </fieldset>
 
         <fieldset>
@@ -356,6 +395,18 @@
   </div>
 </dialog>
 
+<!-- Reward picker dialog -->
+<dialog id="rewardPicker">
+  <div class="dlg-head">
+    <div class="dlg-title">Choose a reward</div>
+    <button class="chip" type="button" id="rp-close">Close</button>
+  </div>
+  <div class="dlg-body">
+    <div id="rp-info" class="note" style="margin-bottom:8px"></div>
+    <div class="grid" id="rp-grid"></div>
+  </div>
+</dialog>
+
 <script>
 (function(){
   if (typeof window.structuredClone !== "function") {
@@ -366,6 +417,7 @@
   const DEFAULT_PIN = "7497";
   const ALL_DAYS = [1,2,3,4,5,6,7];
 
+  // Defaults and config
   const DEFAULTS = {
     LEVEL_STEP: 120,
     onTimeXp: 10,
@@ -393,11 +445,11 @@
       { id:"ontime", icon:"⭐", label:"On-time bonus", xp:10, special:"ontime" }
     ],
     rewards: [
-      { label:"🎬 Movie night", minLevel:1 },
-      { label:"🍕 Pizza night", minLevel:1 },
-      { label:"🎲 Board game with Dad", minLevel:1 },
-      { label:"📱 30 min screen time", minLevel:1 },
-      { label:"💵 $50 toward savings (Level 3+)", minLevel:3 }
+      { id:"movie", label:"🎬 Movie night", minLevel:1, weeklyLockout:false, levelCooldown:0 },
+      { id:"pizza", label:"🍕 Pizza night", minLevel:1, weeklyLockout:false, levelCooldown:0 },
+      { id:"boardgame", label:"🎲 Board game with Dad", minLevel:1, weeklyLockout:false, levelCooldown:0 },
+      { id:"screen30", label:"📱 30 min screen time", minLevel:1, weeklyLockout:true, levelCooldown:0 },
+      { id:"savings50", label:"💵 $50 toward savings", minLevel:3, weeklyLockout:false, levelCooldown:5 }
     ]
   };
 
@@ -407,7 +459,7 @@
   const now = () => new Date();
   const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
 
-  const CFG_KEY = `xp-config-v5-daynight-${CHILD_ID}`;
+  const CFG_KEY = `xp-config-v6-rfx-${CHILD_ID}`;
   function deepMerge(base, over){
     if (Array.isArray(base)) return Array.isArray(over) ? over.slice() : base.slice();
     if (base && typeof base==="object" && over && typeof over==="object"){
@@ -420,8 +472,10 @@
   function loadCfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)||"null")||{}; }catch{ return {}; } }
   function saveCfg(){ localStorage.setItem(CFG_KEY, JSON.stringify(CONFIG)); }
 
+  // Load config and migrate rewards to new schema if needed
   let CONFIG = deepMerge(DEFAULTS, loadCfg());
-  migrateToDaysIfNeeded(CONFIG);
+  migrateTasksDays(CONFIG);
+  migrateRewards(CONFIG);
   saveCfg();
 
   const getLevelStep = () => Math.max(1, Number(CONFIG.LEVEL_STEP||DEFAULTS.LEVEL_STEP));
@@ -429,22 +483,26 @@
   const getTasks = () => CONFIG.tasks;
   const getRewards = () => CONFIG.rewards;
 
-  const KEY = `xp-tracker-v9-daynight-${CHILD_ID}`;
+  // State
+  const KEY = `xp-tracker-v10-rfx-${CHILD_ID}`;
   let state = null;
   try { state = JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ state = null; }
   if(!state){
-    state = { weekStart: getWeekStart(now()), _alertLock:false, adjustments:[], child: initChild() };
+    state = { weekStart: getWeekStart(now()), _alertLock:false, adjustments:[], child: initChild(), rewardsLog:[], rewardLocks:{} };
     save();
   } else {
     if(!state.child) state.child = initChild();
     if(!state.weekStart) state.weekStart = getWeekStart(now());
     if(typeof state._alertLock!=="boolean") state._alertLock=false;
     if(!Array.isArray(state.adjustments)) state.adjustments=[];
+    if(!Array.isArray(state.rewardsLog)) state.rewardsLog=[];
+    if(!state.rewardLocks || typeof state.rewardLocks!=="object") state.rewardLocks = {};
   }
 
   function initChild(){
     return {
       xp: 0, level: 1, weekXp: 0,
+      unclaimedLevels: 0,
       weekly: { counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 }, flags: { music:false, spanish:false, workout:false }, swimRequired: 0 },
       today: {}, lastDate: null
     };
@@ -471,6 +529,8 @@
   const xpSpan = document.getElementById("xp");
   const weekXpSpan = document.getElementById("week-xp");
   const levelProgress = document.getElementById("level-progress");
+  const recentRewardSpan = document.getElementById("recent-reward");
+  const chooseRewardBtn = document.getElementById("choose-reward");
 
   // THEME: auto day/night
   function toMins(hhmm){
@@ -498,7 +558,7 @@
   applyTheme();
   setInterval(applyTheme, 10*60*1000);
 
-  // Buttons
+  // Top actions
   $("#reset-week").addEventListener("click", ()=>{
     const pin = prompt("Enter parent PIN to start a new week:");
     if(pin !== (CONFIG.parentPin||DEFAULTS.parentPin)){ alert(pinWrongMsg()); return; }
@@ -524,6 +584,10 @@
     openSettings();
   });
 
+  chooseRewardBtn.addEventListener("click", ()=>{
+    openRewardPicker();
+  });
+
   setInterval(()=>{ autoWeekRollover(); }, 60*1000);
   function autoWeekRollover(){
     const start = new Date(state.weekStart);
@@ -532,11 +596,25 @@
   }
 
   function doNewWeekReset(showAlert){
+    // Clear weekly progress
     state.child.weekly = { counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 }, flags: { music:false, spanish:false, workout:false }, swimRequired: 0 };
     state.child.weekXp = 0;
     state.child.today = {};
     state.child.lastDate = null;
-    state.weekStart = getWeekStart(now());
+
+    // Update week start first
+    const newWeekStart = getWeekStart(now());
+    state.weekStart = newWeekStart;
+
+    // Clear weekly reward locks tied to previous week
+    for(const rid in state.rewardLocks){
+      const lock = state.rewardLocks[rid];
+      if(lock && lock.untilWeekStart && lock.untilWeekStart !== newWeekStart){
+        delete lock.untilWeekStart;
+      }
+      if(lock && Object.keys(lock).length===0) delete state.rewardLocks[rid];
+    }
+
     save(); render();
     if(showAlert) alert("New week started. Weekly counters reset.");
   }
@@ -563,12 +641,19 @@
 
   function applyXp(delta){
     const ch = state.child;
+    const beforeLevel = ch.level;
     ch.xp = Math.max(0, (ch.xp||0) + delta);
     ch.weekXp = Math.max(0, (ch.weekXp||0) + delta);
     xpSpan.classList.remove("pulse");
     void xpSpan.offsetWidth;
     xpSpan.classList.add("pulse");
-    levelCheck();
+    const leveled = levelCheck();
+    if(leveled > 0){
+      ch.unclaimedLevels += leveled;
+      save();
+      render();
+      openRewardPicker(); // auto-open picker
+    }
   }
 
   function pinWrongMsg(){
@@ -579,20 +664,22 @@
   function levelCheck(){
     const ch = state.child;
     const step = getLevelStep();
-    if(state._alertLock) return;
+    let leveled = 0;
+    if(state._alertLock) return 0;
     while(ch.xp >= ch.level * step){
       ch.level += 1;
-      celebrateLevelUp();
+      leveled += 1;
+      celebrateLevelUp(ch.level);
       state._alertLock = true;
-      setTimeout(()=>{ state._alertLock = false; }, 400);
+      setTimeout(()=>{ state._alertLock = false; }, 300);
     }
+    return leveled;
   }
 
-  function celebrateLevelUp(){
+  function celebrateLevelUp(lvl){
     if (CONFIG.celebrate?.confetti) runConfetti(900);
     if (CONFIG.celebrate?.sound) playChime();
-    const name = "Rafe";
-    setTimeout(()=>{ alert(`${name} leveled up to Level ${state.child.level}! Choose a reward.`); }, 50);
+    setTimeout(()=>{ /* toast-like alert retained minimal */ }, 10);
   }
 
   // Confetti
@@ -714,6 +801,73 @@
     save(); render();
   }
 
+  // Rewards availability and picker
+  function rewardAvailable(r, curLevel){
+    if((r.minLevel||1) > curLevel) return { ok:false, reason:`Requires level ${r.minLevel}` };
+    const lock = state.rewardLocks[r.id] || {};
+    if(lock.untilWeekStart && lock.untilWeekStart === state.weekStart) return { ok:false, reason:`Available next week` };
+    if(lock.untilLevel && curLevel < lock.untilLevel) return { ok:false, reason:`Available at level ${lock.untilLevel}` };
+    return { ok:true };
+  }
+
+  function chooseReward(r){
+    const ch = state.child;
+    const avail = rewardAvailable(r, ch.level);
+    if(!avail.ok){ alert(`Locked: ${avail.reason}`); return; }
+    if(ch.unclaimedLevels <= 0){ alert("No unclaimed level-ups right now."); return; }
+    state.rewardLocks[r.id] = state.rewardLocks[r.id] || {};
+    if(r.weeklyLockout){ state.rewardLocks[r.id].untilWeekStart = state.weekStart; }
+    if((r.levelCooldown|0) > 0){ state.rewardLocks[r.id].untilLevel = ch.level + (r.levelCooldown|0); }
+    state.rewardsLog.push({ rewardId:r.id, label:r.label, t: Date.now(), level: ch.level });
+    ch.unclaimedLevels = Math.max(0, ch.unclaimedLevels - 1);
+    save(); render();
+    closeRewardPicker();
+    alert(`Reward chosen: ${r.label}`);
+  }
+
+  function openRewardPicker(){
+    const dlg = document.getElementById("rewardPicker");
+    const info = document.getElementById("rp-info");
+    const grid = document.getElementById("rp-grid");
+    const ch = state.child;
+    grid.innerHTML = "";
+
+    const rewardList = getRewards().slice();
+    let availableCount = 0;
+
+    rewardList.forEach(r=>{
+      const check = rewardAvailable(r, ch.level);
+      const card = document.createElement("div");
+      card.className = "reward-card" + (check.ok ? "" : " locked");
+      card.innerHTML = `
+        <div>
+          <div class="label" style="font-weight:700">${r.label}</div>
+          <div class="meta">
+            Requires L${r.minLevel||1}${r.weeklyLockout?" · Weekly":""}${(r.levelCooldown|0)>0?` · Cooldown ${r.levelCooldown} lvl`:''}
+          </div>
+          ${check.ok? "": `<div class="meta">Locked: ${check.reason}</div>`}
+        </div>
+        <div>
+          <button class="chip pick" ${check.ok?"":"disabled"}>Pick</button>
+        </div>
+      `;
+      if(check.ok) availableCount++;
+      card.querySelector(".pick").addEventListener("click", ()=>chooseReward(r));
+      grid.appendChild(card);
+    });
+
+    info.textContent = ch.unclaimedLevels > 0
+      ? `You have ${ch.unclaimedLevels} reward${ch.unclaimedLevels>1?'s':''} to claim.`
+      : `No unclaimed rewards.`;
+    document.getElementById("rp-close").onclick = closeRewardPicker;
+    dlg.showModal();
+
+    if(ch.unclaimedLevels>0 && availableCount===0){
+      alert("No rewards are currently eligible. You can claim later when one becomes available.");
+    }
+  }
+  function closeRewardPicker(){ document.getElementById("rewardPicker").close(); }
+
   function updateCrestAndProgress(){
     const ch = state.child;
     const step = getLevelStep();
@@ -726,10 +880,15 @@
     xpSpan.textContent = String(ch.xp);
     weekXpSpan.textContent = String(ch.weekXp || 0);
     levelProgress.style.width = `${isFinite(pct)?(pct*100):0}%`;
+
+    const log = state.rewardsLog;
+    const last = log[log.length-1];
+    recentRewardSpan.textContent = last ? ` · Last reward: ${last.label}` : "";
+    chooseRewardBtn.style.display = state.child.unclaimedLevels > 0 ? "inline-flex" : "none";
   }
 
   function render(){
-    applyTheme(); // ensure theme is correct on render too
+    applyTheme();
     ensureToday();
     const d = now();
     dateSpan.textContent = `• ${d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })}`;
@@ -789,18 +948,24 @@
     rewardsWrap.innerHTML = "";
     const curLevel = state.child.level;
     getRewards().forEach(r=>{
+      const avail = rewardAvailable(r, curLevel);
       const span = document.createElement("span");
-      span.className = "reward";
+      span.className = "reward " + (avail.ok ? "available" : "locked");
       span.dataset.minlevel = r.minLevel||1;
+      span.title = avail.ok ? "Available" : avail.reason;
       span.textContent = r.label;
-      span.style.opacity = curLevel >= (r.minLevel||1) ? 1 : 0.5;
-      span.title = curLevel >= (r.minLevel||1) ? "" : `Unlocks at Level ${r.minLevel||1}`;
+      if(avail.ok){
+        span.addEventListener("click", ()=>{
+          if(state.child.unclaimedLevels>0) chooseReward(r);
+        });
+      }
       rewardsWrap.appendChild(span);
     });
 
     document.getElementById("toggle-ontime").textContent = `+${getOnTimeXp()} XP`;
   }
 
+  // Printing helpers (unchanged except content building)
   function printChecklist(){
     const name = "Rafe";
     const css = `
@@ -883,9 +1048,7 @@
     }
   }
 
-  document.getElementById("print-checklist").addEventListener("click", printChecklist);
-  document.getElementById("print-ledger").addEventListener("click", printLedger);
-
+  // Settings dialog logic
   const dlg = document.getElementById("settingsDlg");
   document.getElementById("cfg-close").addEventListener("click", ()=>dlg.close());
   document.getElementById("cfg-export").addEventListener("click", ()=>{
@@ -907,7 +1070,8 @@
         try{
           const json = JSON.parse(txt);
           let imported = deepMerge(DEFAULTS, json);
-          migrateToDaysIfNeeded(imported);
+          migrateTasksDays(imported);
+          migrateRewards(imported);
           CONFIG = imported;
           saveCfg();
           populateSettings();
@@ -957,15 +1121,12 @@
     alert(`Level set to ${state.child.level}.`);
   });
 
-  function uniqueTaskId(base="task"){
-    const used = new Set(CONFIG.tasks.map(t=>t.id));
-    let n = 1;
-    while(used.has(`${base}${n}`)) n++;
-    return `${base}${n}`;
+  function uniqueId(base, usedSet){
+    let n=1; while(usedSet.has(`${base}${n}`)) n++; return `${base}${n}`;
   }
 
-  // Migration to days if older configs
-  function migrateToDaysIfNeeded(cfg){
+  // Migration helpers
+  function migrateTasksDays(cfg){
     if(!Array.isArray(cfg.tasks)) return;
     const legacyPack = Array.isArray(cfg.PACK_NIGHTS) ? cfg.PACK_NIGHTS.slice().sort((a,b)=>a-b) : null;
     cfg.tasks.forEach(t=>{
@@ -991,28 +1152,55 @@
     delete cfg.PACK_NIGHTS;
   }
 
+  function migrateRewards(cfg){
+    if(!Array.isArray(cfg.rewards)) cfg.rewards = [];
+    const used = new Set();
+    cfg.rewards.forEach(r=>{
+      if(!r.id){
+        const base = (r.label||"reward").toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,12) || "reward";
+        r.id = uniqueId(base, used);
+      }
+      used.add(r.id);
+      r.minLevel = Math.max(1, Number(r.minLevel||1));
+      r.weeklyLockout = !!r.weeklyLockout;
+      r.levelCooldown = Math.max(0, Number(r.levelCooldown||0));
+    });
+  }
+
+  // Rewards manager (Parent Mode)
   function renderRewardsManager(){
     const wrap = document.getElementById("rewards-manager");
     wrap.innerHTML = "";
     getRewards().forEach((r, idx)=>{
       const row = document.createElement("div");
-      row.className = "reward-row";
+      row.className = "reward-row task-card";
       row.dataset.index = idx;
       row.innerHTML = `
-        <div>
-          <label>Label</label>
-          <input type="text" value="${r.label||""}" data-f="label">
+        <div class="inline" style="gap:10px; align-items:flex-end; flex-wrap:wrap">
+          <div style="min-width:180px">
+            <label>Label</label>
+            <input type="text" value="${r.label||""}" data-f="label">
+          </div>
+          <div style="min-width:120px">
+            <label>Required level</label>
+            <input type="number" min="1" step="1" value="${r.minLevel||1}" data-f="minLevel">
+          </div>
+          <label class="inline" style="gap:6px">
+            <input type="checkbox" data-f="weeklyLockout" ${r.weeklyLockout?'checked':''}>
+            Weekly lockout
+          </label>
+          <div style="min-width:150px">
+            <label>Level cooldown</label>
+            <input type="number" min="0" step="1" value="${r.levelCooldown||0}" data-f="levelCooldown">
+          </div>
+          <div class="inline" style="gap:6px">
+            <button class="chip" type="button" data-act="up">↑</button>
+            <button class="chip" type="button" data-act="down">↓</button>
+            <button class="chip" type="button" data-act="dup">Duplicate</button>
+            <button class="chip" type="button" data-act="del">Delete</button>
+          </div>
         </div>
-        <div>
-          <label>Min level</label>
-          <input type="number" min="1" step="1" value="${r.minLevel||1}" data-f="minLevel">
-        </div>
-        <div>
-          <button class="chip" type="button" data-act="up">↑</button>
-          <button class="chip" type="button" data-act="down">↓</button>
-          <button class="chip" type="button" data-act="dup">Duplicate</button>
-          <button class="chip" type="button" data-act="del">Delete</button>
-        </div>
+        <div class="small-note">ID: ${r.id}</div>
       `;
       row.querySelectorAll("[data-f]").forEach(inp=>{
         inp.addEventListener("input", ()=>{
@@ -1021,25 +1209,41 @@
           if(inp.getAttribute("data-f")==="minLevel"){
             const v = Number(inp.value); rr.minLevel = isNaN(v)?1:Math.max(1,v);
           }
+          if(inp.getAttribute("data-f")==="weeklyLockout"){
+            rr.weeklyLockout = row.querySelector('[data-f="weeklyLockout"]').checked;
+          }
+          if(inp.getAttribute("data-f")==="levelCooldown"){
+            const v = Number(inp.value); rr.levelCooldown = isNaN(v)?0:Math.max(0,v);
+          }
+          saveCfg();
         });
       });
       row.querySelectorAll("[data-act]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const act = btn.getAttribute("data-act");
-          if(act==="up" && idx>0){ const tmp = CONFIG.rewards[idx-1]; CONFIG.rewards[idx-1]=CONFIG.rewards[idx]; CONFIG.rewards[idx]=tmp; renderRewardsManager(); }
-          if(act==="down" && idx<CONFIG.rewards.length-1){ const tmp = CONFIG.rewards[idx+1]; CONFIG.rewards[idx+1]=CONFIG.rewards[idx]; CONFIG.rewards[idx]=tmp; renderRewardsManager(); }
-          if(act==="dup"){ const copy = JSON.parse(JSON.stringify(CONFIG.rewards[idx])); CONFIG.rewards.splice(idx+1,0,copy); renderRewardsManager(); }
+          if(act==="up" && idx>0){ const t = CONFIG.rewards[idx-1]; CONFIG.rewards[idx-1]=CONFIG.rewards[idx]; CONFIG.rewards[idx]=t; renderRewardsManager(); }
+          if(act==="down" && idx<CONFIG.rewards.length-1){ const t = CONFIG.rewards[idx+1]; CONFIG.rewards[idx+1]=CONFIG.rewards[idx]; CONFIG.rewards[idx]=t; renderRewardsManager(); }
+          if(act==="dup"){
+            const copy = JSON.parse(JSON.stringify(CONFIG.rewards[idx]));
+            const used = new Set(CONFIG.rewards.map(x=>x.id));
+            copy.id = uniqueId(copy.id.replace(/\d+$/,'') || "reward", used);
+            CONFIG.rewards.splice(idx+1,0,copy); renderRewardsManager();
+          }
           if(act==="del"){ CONFIG.rewards.splice(idx,1); renderRewardsManager(); }
+          saveCfg();
         });
       });
       wrap.appendChild(row);
     });
   }
   document.getElementById("reward-add").addEventListener("click", ()=>{
-    CONFIG.rewards.push({ label:"New reward", minLevel:1 });
+    const used = new Set(CONFIG.rewards.map(r=>r.id));
+    CONFIG.rewards.push({ id: uniqueId("reward", used), label:"New reward", minLevel:1, weeklyLockout:false, levelCooldown:0 });
+    saveCfg();
     renderRewardsManager();
   });
 
+  // Tasks manager (unchanged structure)
   function renderTasksManager(){
     const wrap = document.getElementById("tasks-manager");
     wrap.innerHTML = "";
@@ -1151,13 +1355,14 @@
           if(act==="down" && idx<CONFIG.tasks.length-1){ const tmp = CONFIG.tasks[idx+1]; CONFIG.tasks[idx+1]=CONFIG.tasks[idx]; CONFIG.tasks[idx]=tmp; renderTasksManager(); }
           if(act==="dup"){
             const copy = JSON.parse(JSON.stringify(CONFIG.tasks[idx]));
-            copy.id = uniqueTaskId(copy.id.replace(/\d+$/,''));
+            copy.id = uniqueId(copy.id.replace(/\d+$/,''), new Set(CONFIG.tasks.map(t=>t.id)));
             CONFIG.tasks.splice(idx+1, 0, copy);
             renderTasksManager();
           }
           if(act==="del"){
             if(confirm("Delete this task?")){ CONFIG.tasks.splice(idx,1); renderTasksManager(); }
           }
+          saveCfg();
         });
       });
 
@@ -1245,7 +1450,6 @@
     }
     CONFIG.pinHint = (document.getElementById("cfg-pinHint").value || "").trim();
 
-    // Theme
     const mode = document.querySelector('input[name="cfg-theme-mode"]:checked')?.value || "auto";
     const dayStart = document.getElementById("cfg-day-start").value || "07:00";
     const nightStart = document.getElementById("cfg-night-start").value || "19:00";
@@ -1257,12 +1461,14 @@
     alert("Settings saved.");
   }
 
+  // Initial render
+  render();
+
+  // Open settings
   function openSettings(){
     populateSettings();
     document.getElementById("settingsDlg").showModal();
   }
-
-  render();
 })();
 </script>
 </body>
