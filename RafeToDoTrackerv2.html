@@ -232,7 +232,7 @@
               stroke-linecap="round" stroke-dasharray="113.097" stroke-dashoffset="113.097"
               transform="rotate(-90 22 22)"></circle>
           </svg>
-          <div class="lvl" id="crest-level">1</div>
+          <div class="lvl" id="crest-level">0</div>
         </div>
         <div class="brand-text">
           <div class="title">Rafe’s Quest Board</div>
@@ -261,7 +261,7 @@
           <div class="progress" title="Level progress">
             <div id="level-progress"></div>
           </div>
-          <div class="sub">Level <span id="level">1</span> · <span id="xp">0</span> XP · Week <span id="week-xp">0</span> XP
+          <div class="sub">Level <span id="level">0</span> · <span id="xp">0</span> XP · Week <span id="week-xp">0</span> XP
             <span id="recent-reward" class="recent-reward"></span>
             <button id="choose-reward" class="chip" style="display:none">Choose reward</button>
           </div>
@@ -382,7 +382,7 @@
           <div class="inline" style="gap:10px; margin-top:8px; align-items:flex-end">
             <div style="min-width:160px">
               <label>Set exact level (optional)</label>
-              <input id="cfg-set-level" type="number" min="1" step="1" placeholder="e.g., 3">
+              <input id="cfg-set-level" type="number" min="0" step="1" placeholder="e.g., 3">
             </div>
             <button class="chip" type="button" id="cfg-apply-level">Set Level</button>
           </div>
@@ -501,7 +501,7 @@
 
   function initChild(){
     return {
-      xp: 0, level: 1, weekXp: 0,
+      xp: 0, level: 0, weekXp: 0,
       unclaimedLevels: 0,
       weekly: { counts: { music:0, spanish:0, lunch:0, swim:0, workout:0 }, flags: { music:false, spanish:false, workout:false }, swimRequired: 0 },
       today: {}, lastDate: null
@@ -666,7 +666,7 @@
     const step = getLevelStep();
     let leveled = 0;
     if(state._alertLock) return 0;
-    while(ch.xp >= ch.level * step){
+    while(ch.xp >= ch.level * step + step){ // require next threshold: (level+1)*step
       ch.level += 1;
       leveled += 1;
       celebrateLevelUp(ch.level);
@@ -679,7 +679,7 @@
   function celebrateLevelUp(lvl){
     if (CONFIG.celebrate?.confetti) runConfetti(900);
     if (CONFIG.celebrate?.sound) playChime();
-    setTimeout(()=>{ /* toast-like alert retained minimal */ }, 10);
+    setTimeout(()=>{ /* toast-like */ }, 10);
   }
 
   // Confetti
@@ -871,7 +871,7 @@
   function updateCrestAndProgress(){
     const ch = state.child;
     const step = getLevelStep();
-    const pct = ((ch.xp % step) / step);
+    const pct = step>0 ? ((ch.xp % step) / step) : 0;
     const circumference = 2*Math.PI*18; // r=18
     crestRing.setAttribute("stroke-dasharray", String(circumference.toFixed(3)));
     crestRing.setAttribute("stroke-dashoffset", String((circumference*(1-pct)).toFixed(3)));
@@ -965,7 +965,7 @@
     document.getElementById("toggle-ontime").textContent = `+${getOnTimeXp()} XP`;
   }
 
-  // Printing helpers (unchanged except content building)
+  // Printing helpers
   function printChecklist(){
     const name = "Rafe";
     const css = `
@@ -1114,8 +1114,8 @@
     alert(`Undid last adjustment (${last.delta>0?'+':''}${last.delta} XP).`);
   });
   document.getElementById("cfg-apply-level").addEventListener("click", ()=>{
-    const lvl = Math.max(1, Number(document.getElementById("cfg-set-level").value||0));
-    if(!Number.isFinite(lvl) || lvl<1){ alert("Enter a valid level (1 or higher)."); return; }
+    const lvl = Math.max(0, Number(document.getElementById("cfg-set-level").value||0));
+    if(!Number.isFinite(lvl) || lvl<0){ alert("Enter a valid level (0 or higher)."); return; }
     state.child.level = Math.floor(lvl);
     save(); render();
     alert(`Level set to ${state.child.level}.`);
